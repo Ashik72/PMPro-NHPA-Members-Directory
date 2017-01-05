@@ -1,0 +1,80 @@
+.load_nhpa_pmpro_members .container {
+	width: inherit;
+}
+
+.single_member_profile {
+  transition: all 0.2s linear;
+	border-top: 0.1rem solid #313D49;
+}
+
+.nhpa_profile_avatar {
+	width: 75% !important;
+}
+
+.single_member_profile .full_name {
+
+  font-size: 1.5rem;
+
+}
+
+
+.single_member_profile:hover {
+  border: 0.1rem solid #fff;
+  box-shadow: 0.4rem 0.5rem 1rem #3d6d9e;
+  margin-bottom: 1rem;
+  padding: 0rem;
+}
+
+.user_bio {
+  text-align: justify;
+}
+
+.user_phone {
+  font-size: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.single_member_profile .col-xs-4 {
+  border-left: 1px solid #313d49;
+}
+
+.view_profile button {
+  /*background: #fff none repeat scroll 0 0 ;
+  color: #313d49 ;*/
+  margin: 1rem 0rem;
+}
+
+.single_member_profile_load {
+  text-align: center;
+}
+
+.navigate_dir .col-xs-2 {
+  text-align: center;
+}
+
+.row.navigate_dir {
+  background: #313d49 none repeat scroll 0 0;
+  color: #fff;
+  padding: 1rem;
+}
+
+.row.navigate_dir {
+  clear: both;
+}
+
+.navigate_dir .nextList {
+  float: right;
+}
+
+.preList {
+
+  display: none;
+
+}
+
+.load_nhpa_pmpro_members .nextList a, .navigate_dir .preList a {
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-decoration: none;
+}
