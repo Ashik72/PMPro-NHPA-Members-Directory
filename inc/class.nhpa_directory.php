@@ -28,7 +28,7 @@ public static function get_instance() {
 
     add_shortcode( 'nhpa_members_dir', [$this, 'nhpa_members_dir_func'] );
 
-    add_action( 'wp_footer', array($this, 'wp_footer_test') );
+    //add_action( 'wp_footer', array($this, 'wp_footer_test') );
 
     add_action( 'wp_ajax_get_nhpa_users_id', array($this, 'get_nhpa_users_id_callback') );
     add_action( 'wp_ajax_nopriv_get_nhpa_users_id', array($this, 'get_nhpa_users_id_callback') );
@@ -39,8 +39,29 @@ public static function get_instance() {
     add_action( 'wp_ajax_request_detail_single_user', array($this, 'request_detail_single_user_callback') );
     add_action( 'wp_ajax_nopriv_request_detail_single_user', array($this, 'request_detail_single_user_callback') );
 
+		add_shortcode( 'nhpa_members_dir_search', ['NHPA_Directory_Search', 'NHPA_Directory_Search_func'] );
+
+		add_action( 'wp_ajax_search_grab_matched_users', array('NHPA_Directory_Search', 'search_grab_matched_users_func') );
+    add_action( 'wp_ajax_nopriv_search_grab_matched_users', array('NHPA_Directory_Search', 'search_grab_matched_users_func') );
+
+		add_action('template_redirect', [$this, 'debug_user']);
 
   }
+
+	public function debug_user() {
+
+		if (empty($_GET['show_user_data']))
+			return;
+
+		if (!current_user_can( 'manage_options' ))
+			return;
+
+			$user_id = (int) $_GET['show_user_data'];
+
+		d(get_user_meta($user_id));
+		wp_die("", "show_user_data");
+	}
+
 
   public function request_detail_single_user_callback() {
 

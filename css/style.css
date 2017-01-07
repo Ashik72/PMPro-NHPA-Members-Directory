@@ -78,3 +78,12 @@
   font-weight: bold;
   text-decoration: none;
 }
+
+.search_dir_nhpa .container {
+	width: inherit;
+}
+
+
+.search_dir_nhpa select {
+	height: auto !important;
+}

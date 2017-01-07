@@ -7,10 +7,12 @@ jQuery(document).ready(function($) {
 
       this.load_nhpa_pmpro_members();
       this.adjust_height();
+      this.search_dir();
+
 
     },
 
-    load_nhpa_pmpro_members: function(limitF, offsetF) {
+    load_nhpa_pmpro_members: function(limitF, offsetF, doSearch) {
 
       if ($(".load_nhpa_pmpro_members").length === 0)
         return;
@@ -55,7 +57,19 @@ jQuery(document).ready(function($) {
 
         }
 
-          console.log(getData);
+
+        var searchStatus = $(".load_nhpa_pmpro_members").data("searchstatus");
+
+        if (searchStatus == 1) {
+
+          $(".navigate_dir").css("display", "none");
+
+          if (typeof doSearch == 'undefined')
+            return;
+
+        }
+
+
 
               var data = {
                 'action' : 'get_nhpa_users_id',
@@ -70,6 +84,14 @@ jQuery(document).ready(function($) {
               jQuery.post(nhpa_plugin_data.ajax_url, data, function(response) {
 
                 response = $.parseJSON(response)
+
+                if (typeof doSearch != 'undefined') {
+                  response = doSearch;
+                  console.log(response);
+
+
+                }
+
 
                 $.each(response, function(i, el) {
 
@@ -214,6 +236,71 @@ jQuery(document).ready(function($) {
 
 
     })
+
+  },
+
+  search_dir: function() {
+
+    $("#searchDirForm").submit(function(evt) {
+
+      evt.preventDefault();
+
+      var gather_data = [];
+      var input_val, input_meta;
+
+      $(this).find("input").each(function(i, input) {
+
+        input_val = $(this).val();
+        input_meta = $(this).data('meta_field');
+
+        if ($(this).data('meta_field') == "search_type") {
+
+          input_val = $(this).filter(':checked').val();
+          input_meta = $(this).data('meta_field');
+
+          if (typeof input_val == "undefined")
+            return;
+
+          gather_data.push({ 'meta' : input_meta, 'value' : input_val });
+
+          return;
+        }
+
+        gather_data.push({ 'meta' : input_meta, 'value' : input_val });
+
+      })
+
+      $(this).find("select").each(function(i, input) {
+
+        select_val = $(this).find("option:selected").text();
+        select_meta = $(this).data('meta_field');
+
+
+        gather_data.push({ 'meta' : select_meta, 'value' : select_val });
+
+      })
+
+      var data = {
+        'action' : 'search_grab_matched_users',
+        'search_params' : gather_data
+      };
+
+
+      jQuery.post(nhpa_plugin_data.ajax_url, data, function(response) {
+
+        response = $.parseJSON(response);
+
+        if (typeof response != 'undefined')
+          nhpa_dir.load_nhpa_pmpro_members( "", "",response);
+
+        console.log(response);
+        console.log(typeof response);
+
+      });
+
+    })
+
+
 
   }
 

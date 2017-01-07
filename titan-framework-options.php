@@ -34,6 +34,14 @@ function wp_expert_custom_options_pmpro_nhpa_opts() {
         'default' => 'office_phone'
         ]);
 
+        $tab->createOption([
+          'name' => 'Search Fields To Show',
+          'id' => 'dir_search_fields',
+          'type' => 'textarea',
+          'desc' => 'Text: text|title|meta_field</br>Dropdown: select|title|meta_field|value1,value2,value3 <strong><u>OR</u></strong> dropdown|title|meta_field|auto <br/>Please put options in separate lines.',
+          'default' => ''
+          ]);
+
 
 	/*			$tab = $section->createTab( array(
     		'name' => 'Product Field Options'
