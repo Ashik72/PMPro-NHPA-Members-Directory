@@ -7,6 +7,9 @@ if(!defined('WPINC')) // MUST have WordPress.
   require_once( 'titan-framework-options.php' );
 
 require_once( plugin_dir_path( __FILE__ ) . '/inc/class.dir_search.php' );
+require_once( plugin_dir_path( __FILE__ ) . '/inc/class.nhpa_profile.php' );
+
+
 require_once( plugin_dir_path( __FILE__ ) . '/inc/class.nhpa_directory.php' );
 
   add_action( 'plugins_loaded', function () {

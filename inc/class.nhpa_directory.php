@@ -46,6 +46,10 @@ public static function get_instance() {
 
 		add_action('template_redirect', [$this, 'debug_user']);
 
+
+		add_shortcode( 'nhpa_user_profile', ['NHPA_User_Profile', 'NHPA_User_Profile_func'] );
+
+
   }
 
 	public function debug_user() {
@@ -53,13 +57,84 @@ public static function get_instance() {
 		if (empty($_GET['show_user_data']))
 			return;
 
-		if (!current_user_can( 'manage_options' ))
-			return;
+			global $wpdb;
+
+		// if (!current_user_can( 'manage_options' ))
+		// 	return;
 
 			$user_id = (int) $_GET['show_user_data'];
 
+
+
+		d(pmpro_hasMembershipLevel(9 , $user_id));
+
+
 		d(get_user_meta($user_id));
 		wp_die("", "show_user_data");
+
+		//d(pmpro_hasMembershipLevel(14 , $user_id));
+
+		$user_data = self::get_filtered_user_meta($user_id);
+		//echo self::get_single_profile_detail(['user_id' => $user_id]);
+		//$avatar_id = ( empty($user_data[$wpdb->get_blog_prefix().'user_avatar']) ? "" : $user_data[$wpdb->get_blog_prefix().'user_avatar'] );
+		d($user_data);
+
+		wp_die("", "show_user_data");
+	}
+
+	public static function get_filtered_user_meta($user_id = null) {
+
+		if (empty($user_id))
+			$user_id = get_current_user_id();
+
+			$user_data = ( empty(get_user_meta($user_id)) ? array() : get_user_meta($user_id) );
+
+			if (current_user_can( 'manage_options' ))
+				return $user_data;
+
+
+
+			$current_user_id = get_current_user_id();
+
+			$titan = TitanFramework::getInstance( 'pmpro_nhpa_opts' );
+
+			$restrict_struct = $titan->getOption( 'dir_restrict_member_data' );
+
+			if ( empty($restrict_struct) )
+				return $user_data;
+
+			$restrict_struct = explode(PHP_EOL, $restrict_struct);
+
+			$restrict_struct =  ( is_array($restrict_struct) ? $restrict_struct : [] );
+
+			$store_meta = [];
+
+			foreach ($restrict_struct as $key => $single_structure) {
+				$single_structure = explode("|", $single_structure);
+
+				if (empty($single_structure[0]) || empty($single_structure[1]))
+					continue;
+
+				$membership_level = (int) $single_structure[1];
+
+				if (pmpro_hasMembershipLevel($membership_level , $current_user_id))
+					$store_meta[] = [ 'meta' => $single_structure[0] , 'err' => ( empty($single_structure[2]) ? "" : $single_structure[2]) ];
+
+			}
+
+			if (empty($store_meta))
+				return $user_data;
+
+				foreach ($store_meta as $key => $single_meta_info) {
+
+					if (ctype_space($single_meta_info['err']) || empty($single_meta_info['err']))
+						unset($user_data[$single_meta_info['meta']]);
+					else
+						$user_data[$single_meta_info['meta']] = $single_meta_info['err'];
+
+				}
+
+			return $user_data;
 	}
 
 
@@ -109,6 +184,15 @@ public static function get_instance() {
 
     //$html_single = self::get_single_profile_basic(379);
 
+		if (!empty($_GET['user_id'])) {
+
+			$user_id = (int) $_GET['user_id'];
+
+			return do_shortcode('[nhpa_user_profile user_id="'.$user_id.'"]');
+
+		}
+
+
     $html = "";
 
     $html .= "<div class='load_nhpa_pmpro_members' data-limit='".$atts['limit']."'>";
@@ -137,14 +221,17 @@ public static function get_instance() {
     $titan = TitanFramework::getInstance( 'pmpro_nhpa_opts' );
 
     $uid = $user_id;
-    $user_data = get_user_meta($uid);
-    $avatar_id = get_user_meta($uid, $wpdb->get_blog_prefix().'user_avatar', true);
+    $user_data = self::get_filtered_user_meta($uid);
+
+    $avatar_id = ( empty($user_data[$wpdb->get_blog_prefix().'user_avatar']) ? "" : $user_data[$wpdb->get_blog_prefix().'user_avatar'] );
+		// get_user_meta($uid, $wpdb->get_blog_prefix().'user_avatar', true);
     $image_url = wp_get_attachment_url($avatar_id);
     $user_instituion = ( empty($user_data['institutiongraduatedfrom'][0]) ? $user_data['institution'][0] : $user_data['institutiongraduatedfrom'][0] );
     $image_url = ( empty($image_url) ? pmpro_nhpa_PLUGIN_URL.'img/propic.png' : $image_url );
     $user_bio = ( empty($user_data['description'][0]) ? "" : $user_data['description'][0] );
     $user_bio = ( empty($titan->getOption( 'nhpa_bio_limit_word' )) ? $user_bio : wp_trim_words($user_bio, $titan->getOption( 'nhpa_bio_limit_word' )) );
-    $avatar_id = get_user_meta($uid, 'profession', true);
+    //$avatar_id = get_user_meta($uid, 'profession', true);
+
     $user_profession = ( empty($user_data['profession'][0]) ? "" : $user_data['profession'][0] );
     $user_degree = ( empty($user_data['degree'][0]) ? "" : $user_data['degree'][0] );
     $user_phone_meta =  $titan->getOption( 'user_phone_meta' );
@@ -192,15 +279,20 @@ public static function get_instance() {
       $uid = $user_id;
     global $wpdb;
 
-    $user_data = get_user_meta($uid);
+    $user_data = self::get_filtered_user_meta($uid);
 
-    $avatar_id = get_user_meta($uid, $wpdb->get_blog_prefix().'user_avatar', true);
+    //$avatar_id = get_user_meta($uid, $wpdb->get_blog_prefix().'user_avatar', true);
+		$avatar_id = ( empty($user_data[$wpdb->get_blog_prefix().'user_avatar']) ? "" : $user_data[$wpdb->get_blog_prefix().'user_avatar'] );
+
     $image_url = wp_get_attachment_url($avatar_id);
     $image_url = ( empty($image_url) ? pmpro_nhpa_PLUGIN_URL.'img/propic.png' : $image_url );
 
     $titan = TitanFramework::getInstance( 'pmpro_nhpa_opts' );
 
-    include pmpro_nhpa_PLUGIN_DIR."template".DS."single_detail.php";
+    //include pmpro_nhpa_PLUGIN_DIR."template".DS."single_detail.php";
+
+		_e(do_shortcode('[nhpa_user_profile user_id="228"]'));
+
 
     $output = ob_get_clean();
 

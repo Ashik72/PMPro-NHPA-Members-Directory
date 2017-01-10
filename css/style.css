@@ -79,11 +79,45 @@
   text-decoration: none;
 }
 
-.search_dir_nhpa .container {
+.search_dir_nhpa .container, .container.showUserProfile {
 	width: inherit;
 }
 
+.showUserProfile .container {
+    width: inherit;
+}
 
 .search_dir_nhpa select {
 	height: auto !important;
+}
+
+.section_title .navbar-text {
+	color: #fff;
+	font-size: 1.2rem;
+	margin: 1rem;
+}
+
+.section_title {
+    background: #313D49;
+		margin: 1rem;
+}
+
+.section_data {
+	margin: 0rem 1rem;
+}
+
+.row.section_data_row {
+    padding: 0.4rem;
+}
+
+.showUserProfileSection {
+    padding-top: 0rem !important;
+		padding-bottom: 0.5rem !important;
+
+}
+
+#gmap_canvas {
+
+	height: 200px;
+	margin: 0.9rem;
 }

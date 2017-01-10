@@ -216,6 +216,9 @@ jQuery(document).ready(function($) {
       var prePage = window.location.href;
       var user_id = parseInt($(this).data("user"));
 
+      var url = window.location+"?user_id="+user_id;
+      window.open(url, '_blank');
+      return;
 
       var data = {
         'action' : 'request_detail_single_user',

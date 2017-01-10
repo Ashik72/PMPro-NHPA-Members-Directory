@@ -42,6 +42,54 @@ function wp_expert_custom_options_pmpro_nhpa_opts() {
           'default' => ''
           ]);
 
+        $tab->createOption([
+          'name' => 'Member Data To Restrict',
+          'id' => 'dir_restrict_member_data',
+          'type' => 'textarea',
+          'desc' => 'meta_field|pmpro_level_id|error_message<br/>meta_field : User meta field need to be restricted, pmpro_level_id : PMPro level ID that should not see the data, error_message: any error message, empty to display nothing.',
+          'default' => ''
+          ]);
+
+        $dir_single_member_profile_html = "section_title_any|section_class_any|restriction_level_ids, separated by comma (level_id : if only this level user should be able to view the section , -level id : if only this level user should not be able to view the section, keep empty if this should be visible for all levels)";
+        $dir_single_member_profile_html .= "<br>profile_field_title|meta_field";
+        $dir_single_member_profile_html .= "<br>profile_field_title|meta_field";
+        $dir_single_member_profile_html .= "<br>...";
+        $dir_single_member_profile_html .= "<br>profile_field_title|meta_field";
+        $dir_single_member_profile_html .= "<br>--section_end--<br>";
+        $dir_single_member_profile_html .= "<br><br><b>Example:</b><br>";
+        $dir_single_member_profile_html .= "Basic Profile Information|basic_profile";
+        $dir_single_member_profile_html .= "<br>First Name|first_name";
+        $dir_single_member_profile_html .= "<br>Last Name|last_name";
+        $dir_single_member_profile_html .= "<br>Biography|description";
+        $dir_single_member_profile_html .= "<br>--section_end--<br>";
+        $dir_single_member_profile_html .= "Professional Profile Information|user_pro_profile|3,4,7";
+        $dir_single_member_profile_html .= "<br>Profession|profession";
+        $dir_single_member_profile_html .= "<br>Degree|degree";
+        $dir_single_member_profile_html .= "<br>License Year|yearoflicensure";
+        $dir_single_member_profile_html .= "<br>Board Membership|boardmembership";
+        $dir_single_member_profile_html .= "<br>--section_end--<br>";
+        $dir_single_member_profile_html .= "Professional Profile Information Restricted|user_pro_profile_2|-3,-8,-9";
+        $dir_single_member_profile_html .= "<br>Map Location|map|preferredmailingaddress";
+
+        $dir_single_member_profile_html .= "<br>Profession|profession";
+        $dir_single_member_profile_html .= "<br>Degree|degree";
+        $dir_single_member_profile_html .= "<br>License Year|yearoflicensure";
+        $dir_single_member_profile_html .= "<br>Board Membership|boardmembership";
+        $dir_single_member_profile_html .= "<br>--section_end--<br>";
+        $dir_single_member_profile_html .= "<br><br>Note for map: use this format - Map title|map|meta_field_for_location";
+
+
+      $tab->createOption([
+        'name' => 'Single Profile Structure',
+        'id' => 'dir_single_member_profile',
+        'type' => 'textarea',
+        'desc' => $dir_single_member_profile_html,
+        'default' => '',
+        'is_code' => true
+        ]);
+
+
+
 
 	/*			$tab = $section->createTab( array(
     		'name' => 'Product Field Options'
