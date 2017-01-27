@@ -298,8 +298,10 @@ class NHPA_Directory_Search
 
 			$html_opts = "";
 
+			$html_opts .= "<option></option>";
+
 			if (strcmp($search_field[3], "auto") === 0)
-				$html_opts = self::generate_select_array_auto($search_field[2]);
+				$html_opts .= self::generate_select_array_auto($search_field[2]);
 			else {
 
 				//echo $search_field[3];
@@ -315,9 +317,10 @@ class NHPA_Directory_Search
 
 					$html = '  <div class="form-group row">
 					<label for="select-input-'.$key_count.'" class="col-sm-2 col-form-label">'.$search_field[1].'</label>
-					<div class="col-sm-10">
+					<div class="col-sm-10">';
 
-					<select multiple="multiple" data-select_array="1" data-meta_field="'.$search_field[2].'" multiple class="form-control" id="select-input-'.$key_count.'">';
+					//$html .= '<select data-test="e" multiple="multiple" data-select_array="1" data-meta_field="'.$search_field[2].'" multiple class="form-control" id="select-input-'.$key_count.'">';
+					$html .= '<select data-test="e" data-select_array="1" data-meta_field="'.$search_field[2].'" class="form-control" id="select-input-'.$key_count.'">';
 
 					$html .= $html_opts;
 
@@ -367,6 +370,7 @@ class NHPA_Directory_Search
 			$values = array_filter($values);
 
 			$html_val = "";
+
 			foreach ($values as $key => $value) {
 				$html_val .= "<option>".$value."</option>";
 			}
