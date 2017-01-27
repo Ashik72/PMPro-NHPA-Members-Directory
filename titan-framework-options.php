@@ -42,6 +42,15 @@ function wp_expert_custom_options_pmpro_nhpa_opts() {
           'default' => ''
           ]);
 
+          $tab->createOption([
+            'name' => 'Search Fields To Show (2)',
+            'id' => 'dir_search_fields_2',
+            'type' => 'textarea',
+            'desc' => 'Text: text|title|meta_field</br>Dropdown: select|title|meta_field|value1,value2,value3 <strong><u>OR</u></strong> dropdown|title|meta_field|auto <br/>Please put options in separate lines.<br><br><strong>Meta field: <i>dir_search_fields_2</i> </strong>',
+            'default' => ''
+            ]);
+
+
         $tab->createOption([
           'name' => 'Member Data To Restrict',
           'id' => 'dir_restrict_member_data',
@@ -88,6 +97,19 @@ function wp_expert_custom_options_pmpro_nhpa_opts() {
         'is_code' => true
         ]);
 
+        $tab->createOption([
+          'name' => 'Directory Page ID to appy the membership filter (below)',
+          'id' => 'page_id_for_filter',
+          'type' => 'text',
+          'desc' => ''
+          ]);
+
+          $tab->createOption([
+            'name' => 'Don\'t show users with these membership on above mentioned directory page',
+            'id' => 'exclude_membership_levels',
+            'type' => 'text',
+            'desc' => '[Separated by comma]'
+            ]);
 
 
 

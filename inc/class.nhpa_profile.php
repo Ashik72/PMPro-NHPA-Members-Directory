@@ -250,6 +250,10 @@ class NHPA_User_Profile
         continue;
       }
 
+			if (strcmp($single_structure[1], "email") === 0) {
+				$user_info = get_userdata($user_id);
+				$get_data = $user_info->user_email;
+			}
 
 
       if (empty($get_data))
@@ -259,6 +263,7 @@ class NHPA_User_Profile
 
       if (strcmp($single_structure[1], "description") === 0)
         $get_data = wpautop($get_data);
+
 
       $data_class = preg_replace('/[^A-Za-z0-9\-]/', '', $single_structure[1]);
 
@@ -394,6 +399,77 @@ public static function geocode($address){
     return $output;
 
   }
+
+	public static function show_map_func($user_id, $location) {
+
+    if (empty($location))
+      return "No location_meta specified";
+
+    ob_start();
+
+    $location = trim($location);
+
+    $location = get_user_meta($user_id, $location, true);
+
+    if (empty($location))
+      return "No location found!";
+
+    $data_arr = self::geocode($location);
+
+
+    if($data_arr){
+
+        $latitude = $data_arr[0];
+        $longitude = $data_arr[1];
+        $formatted_address = $data_arr[2];
+
+    ?>
+
+    <!-- google map will be shown here -->
+    <div id="gmap_canvas">Loading map...</div>
+    <div id='map-label'><small>(Map shows approximate location.)</small></div>
+
+    <!-- JavaScript to show google map -->
+    <script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyBQa0l6mp5VWIqyWwEyDsu_x1QG0vwsutc"></script>
+    <script type="text/javascript">
+        function init_map() {
+            var myOptions = {
+                zoom: 14,
+                center: new google.maps.LatLng(<?php echo $latitude; ?>, <?php echo $longitude; ?>),
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            };
+            map = new google.maps.Map(document.getElementById("gmap_canvas"), myOptions);
+            marker = new google.maps.Marker({
+                map: map,
+                position: new google.maps.LatLng(<?php echo $latitude; ?>, <?php echo $longitude; ?>)
+            });
+            infowindow = new google.maps.InfoWindow({
+                content: "<?php echo $formatted_address; ?>"
+            });
+            google.maps.event.addListener(marker, "click", function () {
+                infowindow.open(map, marker);
+            });
+            infowindow.open(map, marker);
+        }
+        google.maps.event.addDomListener(window, 'load', init_map);
+    </script>
+
+    <?php
+
+    // if unable to geocode the address
+    }else{
+        echo "No map found.";
+    }
+
+
+
+		$output = ob_get_clean();
+
+
+    return $output;
+
+  }
+
 
 }
 

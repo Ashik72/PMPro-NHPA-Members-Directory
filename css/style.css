@@ -52,13 +52,13 @@
   text-align: center;
 }
 
-.row.navigate_dir {
+.row.navigate_dir, .proBack {
   background: #313d49 none repeat scroll 0 0;
   color: #fff;
   padding: 1rem;
 }
 
-.row.navigate_dir {
+.row.navigate_dir, .proBack {
   clear: both;
 }
 
@@ -68,7 +68,7 @@
 
 .preList {
 
-  display: none;
+  /*display: none;*/
 
 }
 
@@ -120,4 +120,33 @@
 
 	height: 200px;
 	margin: 0.9rem;
+}
+
+.proBack {
+    text-align: center;
+}
+
+.proBack a {
+    color: #fff !important;
+    font-size: 1.5rem;
+}
+
+.navigate_dir a {
+  color: white !important;
+  padding: 1rem;
+  text-decoration: none !important;
+}
+
+.navigate_dir a.cpid {
+  font-weight: bold;
+  text-decoration: underline !important;
+}
+
+.container.searchParams {
+  background: #3d6d9e none repeat scroll 0 0 !important;
+  color: white;
+}
+
+#searchDirForm .col-sm-2.col-form-label {
+    word-wrap: break-word;
 }

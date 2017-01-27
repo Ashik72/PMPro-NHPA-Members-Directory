@@ -8,6 +8,8 @@ jQuery(document).ready(function($) {
       this.load_nhpa_pmpro_members();
       this.adjust_height();
       this.search_dir();
+      this.load_pagination();
+      //this.select_multiple_limit();
 
 
     },
@@ -31,14 +33,28 @@ jQuery(document).ready(function($) {
 
       if (typeof getData !== 'undefined' && typeof getData.view_profile !== 'undefined') {
 
+        var user_id = parseInt(getData.view_profile);
+        var location_prev = window.location.href;
 
-        console.log("view_profile");
+        var data = {
+          'action' : 'view_profile',
+          'user_id' : user_id,
+          'location_prev' : location_prev
+        };
+
+        // jQuery.post(nhpa_plugin_data.ajax_url, data, function(response) {
+        //
+        // })
+
+
+        console.log(data);
 
         return;
 
       }
 
 
+      var nhpa_page = 1;
 
       if (typeof getData === 'undefined' || typeof getData.get_next === 'undefined')
         offsetF = "";
@@ -48,8 +64,9 @@ jQuery(document).ready(function($) {
         if (typeof getData === 'undefined' || typeof getData.nhpa_page === 'undefined')
           offsetF = "";
         else {
+          //offsetF = offsetF * getData.nhpa_page[0];
           offsetF = offsetF * getData.nhpa_page[0];
-          var nhpa_page = getData.nhpa_page[0];
+          nhpa_page = getData.nhpa_page[0];
 
           //$(".navigate_dir .preList").css("display", "block");
 
@@ -70,12 +87,17 @@ jQuery(document).ready(function($) {
         }
 
 
+        var wp_page_id = parseInt($(".load_nhpa_pmpro_members").data("wp_page_id"));
 
               var data = {
                 'action' : 'get_nhpa_users_id',
                 'limit' : limit,
-                'offset' : offsetF
+                'offset' : offsetF,
+                'page' : nhpa_page,
+                'wp_page_id' : wp_page_id
               };
+
+              //console.log(data);
 
               // $.ajaxSetup({
               //     async: true
@@ -83,29 +105,70 @@ jQuery(document).ready(function($) {
 
               jQuery.post(nhpa_plugin_data.ajax_url, data, function(response) {
 
-                response = $.parseJSON(response)
+                //console.log(response);
 
-                if (typeof doSearch != 'undefined') {
-                  response = doSearch;
-                  console.log(response);
+                response = $.parseJSON(response);
+
+                if (response.users.length == 0) {
+                  $(".load_nhpa_pmpro_members .container:first-child .row.block_input").html('<div class="col-sm-12">No user found!</div>');
 
 
                 }
 
 
+                //var count_total = response.total.total_users;
+                var count_total = response.total_get_users.length;
+                var response_offset = parseInt(response.offset);
+                  response_offset = response_offset+1;
+
+                response = response.users;
+
+                if (typeof doSearch != 'undefined') {
+                  response = doSearch;
+                  //console.log(response);
+
+                }
+
+
+                if ($(".container.searchParams").length == 0) {
+
+                  $(".search_dir_nhpa").append("<div class='container searchParams'></div>");
+                  $(".container.searchParams").append("<div class='row'>Total members : "+count_total+"</div>");
+                  $(".container.searchParams").append("<div class='row'>Showing from : "+response_offset+"</div>");
+
+                } else {
+
+                  $(".container.searchParams").append("<div class='row'>Total members : "+count_total+"</div>");
+                  $(".container.searchParams").append("<div class='row'>Showing from : "+response_offset+"</div>");
+
+                }
+
+
+                //console.log(response);
+
                 $.each(response, function(i, el) {
 
                   var count_i = i;
 
+                  var el_id;
+
+                  if (typeof el.ID == 'undefined')
+                    el_id = el;
+                  else
+                    el_id = el.ID;
+
+
                   // console.log(el.ID);
+                  //
+                  // console.log(el.ID.length);
 
                     var data = {
                       'action' : 'get_single_basic_profile',
-                      'ID' : el.ID
+                      'ID' : el_id
                     };
 
                     $.ajaxSetup({
-                        async: false
+                        async: true
                     });
 
                     jQuery.post(nhpa_plugin_data.ajax_url, data, function(response) {
@@ -135,13 +198,16 @@ jQuery(document).ready(function($) {
                   var limit = $(".load_nhpa_pmpro_members").data("limit");
 
                   $(".load_nhpa_pmpro_members .nextList a").attr("href", "?get_next="+limit+"&nhpa_page="+2);
-
+                  $(".load_nhpa_pmpro_members .preList").css("display", "none");
                 } else {
 
                   var limit = $(".load_nhpa_pmpro_members").data("limit");
                   nhpa_page++;
                   $(".load_nhpa_pmpro_members .nextList a").attr("href", "?get_next="+limit+"&nhpa_page="+nhpa_page);
                   //console.log(nhpa_page);
+                  $(".load_nhpa_pmpro_members .preList").css("display", "block");
+                  $(".load_nhpa_pmpro_members .preList a").attr("href", "?get_next="+limit+"&nhpa_page="+(nhpa_page-1));
+
                 }
 
                 //
@@ -213,12 +279,15 @@ jQuery(document).ready(function($) {
 
       event.preventDefault();
 
+
+      $(this).html("<img style='width: 10%' src='"+nhpa_plugin_data.pmpro_nhpa_PLUGIN_URL+"img/ajax-loader.gif'>");
+
       var prePage = window.location.href;
       var user_id = parseInt($(this).data("user"));
 
       var url = window.location+"?user_id="+user_id;
-      window.open(url, '_blank');
-      return;
+      //window.open(url, '_blank');
+      //return;
 
       var data = {
         'action' : 'request_detail_single_user',
@@ -226,12 +295,31 @@ jQuery(document).ready(function($) {
         'user_id' : user_id
       };
 
+      var this_btn = $(this);
 
       jQuery.post(nhpa_plugin_data.ajax_url, data, function(response) {
 
         response = $.parseJSON(response);
 
-        $(".load_nhpa_pmpro_members .block_input").html(response);
+        var search_div = $(".search_dir_nhpa");
+
+        if (search_div.length > 0)
+          $(".search_dir_nhpa").css("display", "none");
+
+        $(".load_nhpa_pmpro_members .block_input").parent().find(".container.showUserProfile").remove();
+        $(".row.navigate_dir").parent().find(".proBack").remove();
+
+        $(".load_nhpa_pmpro_members .block_input").parent().prepend(response);
+        $(".load_nhpa_pmpro_members .block_input").css("display", "none");
+
+        //$(".row.navigate_dir").html("<div class='proBack'><a href='"+prePage+"'>Back</a></div>");
+        $(".row.navigate_dir").parent().prepend("<div class='proBack'><a href='#'>Back</a></div>")
+        //$(".row.navigate_dir").html("<div class='proBack'><a href='#'>Back</a></div>");
+        $(".row.navigate_dir").css("display", "none");
+
+      }).always(function() {
+
+        this_btn.html("View Profile");
 
 
       });
@@ -239,6 +327,21 @@ jQuery(document).ready(function($) {
 
 
     })
+
+
+    $(document).on("click", ".proBack", function(event) {
+
+      event.preventDefault();
+
+      $(".row.navigate_dir").css("display", "block");
+      $(".proBack").css("display", "none");
+
+      $(".search_dir_nhpa").css("display", "block");
+
+      $(".container.showUserProfile").css("display", "none");
+      $(".row.block_input").css("display", "block");
+
+    });
 
   },
 
@@ -248,6 +351,9 @@ jQuery(document).ready(function($) {
 
       evt.preventDefault();
 
+      $("#searchDirForm button[type='submit']").html("<img src='"+nhpa_plugin_data.pmpro_nhpa_PLUGIN_URL+"img/ajax-loader.gif'>")
+        .css("width", "10%");
+
       var gather_data = [];
       var input_val, input_meta;
 
@@ -255,6 +361,7 @@ jQuery(document).ready(function($) {
 
         input_val = $(this).val();
         input_meta = $(this).data('meta_field');
+        input_title = $(this).parent().parent(".form-group.row").find("label").text();
 
         if ($(this).data('meta_field') == "search_type") {
 
@@ -264,12 +371,12 @@ jQuery(document).ready(function($) {
           if (typeof input_val == "undefined")
             return;
 
-          gather_data.push({ 'meta' : input_meta, 'value' : input_val });
+          gather_data.push({ 'meta' : input_meta, 'value' : input_val, 'title' : input_title });
 
           return;
         }
 
-        gather_data.push({ 'meta' : input_meta, 'value' : input_val });
+        gather_data.push({ 'meta' : input_meta, 'value' : input_val, 'title' : input_title });
 
       })
 
@@ -277,9 +384,14 @@ jQuery(document).ready(function($) {
 
         select_val = $(this).find("option:selected").text();
         select_meta = $(this).data('meta_field');
+        input_title = $(this).parent().parent().find("label").text();
 
+        var select_arr_stat = $(this).data("select_array");
+        select_arr_stat = parseInt(select_arr_stat);
+        if (select_arr_stat)
+          select_val = $(this).val();
 
-        gather_data.push({ 'meta' : select_meta, 'value' : select_val });
+        gather_data.push({ 'meta' : select_meta, 'value' : select_val, 'title' : input_title });
 
       })
 
@@ -288,20 +400,166 @@ jQuery(document).ready(function($) {
         'search_params' : gather_data
       };
 
+      if ($(".container.searchParams").length == 0)
+        $(".search_dir_nhpa").append("<div class='container searchParams'></div>");
+
+        $(".container.searchParams").html("");
+
+      if ($(".searchParamsInfo.row").length == 0)
+        $(".container.searchParams").append("<div class='searchParamsInfo row'>Search parameters:</div>");
+
+      $.each(gather_data, function(i, el) {
+        //console.log(el);
+
+        if (el == null) {
+          el = "";
+          el.value = "";
+        }
+
+        if ((el.value != null) && (el.value.length != 0)) {
+
+          if (el.title.length != 0)
+            $(".container.searchParams").append("<div class='row'>"+el.title+" : "+el.value+"</div>");
+        }
+
+
+      })
 
       jQuery.post(nhpa_plugin_data.ajax_url, data, function(response) {
 
         response = $.parseJSON(response);
 
+        $(".container.searchParams").append("<div class='row'>Total Results: "+response.length+"</div>")
+
+        if (typeof response.err != 'undefined') {
+
+          $(".load_nhpa_pmpro_members .single_member_profile_load").append(response.msg);
+          $(".row.block_input").html(response.msg);
+          $(".nextList").css("display", "none");
+          return;
+        };
+
         if (typeof response != 'undefined')
           nhpa_dir.load_nhpa_pmpro_members( "", "",response);
 
-        console.log(response);
-        console.log(typeof response);
+
+          $(".nextList").css("display", "block");
+
+        // console.log(response);
+        // console.log(typeof response);
+
+        $(".row.navigate_dir").css("display", "none");
+
+      }).always(function() {
+
+        $("#searchDirForm button[type='submit']").html("Submit")
+          .css("width", "auto");
+
+
 
       });
 
     })
+
+
+    $("#searchDirForm").on('reset', function(e) {
+
+      $(".container.searchParams").remove();
+    })
+
+
+  },
+
+  load_pagination: function() {
+
+
+    if ($(".cpid").length == 0)
+      return;
+
+    var current_id = parseInt($(".cpid").text());
+
+    var id_next_1 = current_id + 1;
+    var id_next_2 = current_id + 2;
+    var id_next_3 = current_id + 3;
+
+    var count = parseInt($(".load_nhpa_pmpro_members").data("limit"));
+    var wp_page_id = parseInt($(".load_nhpa_pmpro_members").data("wp_page_id"));
+
+
+    var data_1 = {
+      'action' : 'do_pagination_check',
+      'page_id' : id_next_1,
+      'count' : count,
+      'wp_page_id' : wp_page_id
+    };
+
+    var data_2 = {
+      'action' : 'do_pagination_check',
+      'page_id' : id_next_2,
+      'count' : count,
+      'wp_page_id' : wp_page_id
+    };
+
+    var data_3 = {
+      'action' : 'do_pagination_check',
+      'page_id' : id_next_3,
+      'count' : count,
+      'wp_page_id' : wp_page_id
+    };
+
+    var cpid_parent = $(".cpid");
+
+    jQuery.post(nhpa_plugin_data.ajax_url, data_1, function(response) {
+
+      response = $.parseJSON(response);
+
+      if (response > 0)
+        cpid_parent.parent("div").append('<a href="?get_next='+data_1.count+'&amp;nhpa_page='+id_next_1+'">'+id_next_1+'</a>');
+
+    }).done(function() {
+
+      jQuery.post(nhpa_plugin_data.ajax_url, data_2, function(response) {
+
+        response = $.parseJSON(response);
+
+        if (response > 0)
+          cpid_parent.parent("div").append('<a href="?get_next='+data_2.count+'&amp;nhpa_page='+id_next_2+'">'+id_next_2+'</a>');
+
+      }).done(function() {
+
+        jQuery.post(nhpa_plugin_data.ajax_url, data_3, function(response) {
+
+          response = $.parseJSON(response);
+
+          if (response > 0)
+            cpid_parent.parent("div").append('<a href="?get_next='+data_3.count+'&amp;nhpa_page='+id_next_3+'">'+id_next_3+'</a>');
+
+        });
+
+
+
+      });
+
+
+
+    });
+
+
+
+
+  },
+
+  select_multiple_limit: function() {
+
+    $(".search_dir_nhpa  select[multiple]").on('change', function() {
+        if (this.selectedOptions.length < 2) {
+            $(this).find(':selected').addClass('selected');
+            $(this).find(':not(:selected)').removeClass('selected');
+        }else
+            $(this)
+            .find(':selected:not(.selected)')
+            .prop('selected', false);
+    });
 
 
 

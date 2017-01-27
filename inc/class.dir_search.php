@@ -29,6 +29,8 @@ class NHPA_Directory_Search
 		$search_params = $_POST['search_params'];
 		$search_results = array();
 		$search_type = "";
+
+
 		foreach ($search_params as $key => $search_param) {
 
 			if (empty($search_param['value'])) {
@@ -42,10 +44,28 @@ class NHPA_Directory_Search
 			$meta_key = $search_param['meta'];
 			$meta_value = $search_param['value'];
 
+			if (!is_array($meta_value))
+				$search_results[] = $wpdb->get_results( "SELECT * FROM `{$prefix}usermeta` WHERE meta_key = '{$meta_key}' AND `meta_value` LIKE '%{$meta_value}%'", OBJECT );
+			else {
+
+				foreach ($meta_value as $key => $single_meta_value) {
+					$search_results[] = $wpdb->get_results( "SELECT * FROM `{$prefix}usermeta` WHERE meta_key = '{$meta_key}' AND `meta_value` LIKE '%{$single_meta_value}%'", OBJECT );
+				}
+
+			}
+
 //SELECT * FROM `wpgq_usermeta` WHERE `meta_key` = 'institution' AND `meta_value` = 'brac'
-			$search_results[] = $wpdb->get_results( "SELECT * FROM `{$prefix}usermeta` WHERE meta_key = '{$meta_key}' AND `meta_value` LIKE '%{$meta_value}%'", OBJECT );
 
 		}
+
+			$search_results = array_filter($search_results);
+
+			if (empty($search_results)) {
+				echo json_encode(['err' => 1, 'msg' => "Nothing found!"]);
+				wp_die();
+
+			}
+
 
 			if (strcmp($search_type, "intersect") === 0)
 				$final_result = self::intersectSearchResult($search_results);
@@ -163,11 +183,30 @@ class NHPA_Directory_Search
 
 
 
-	public static function NHPA_Directory_Search_func() {
+	public static function NHPA_Directory_Search_func($atts, $content) {
 
+		$opts = shortcode_atts( array(
+        'on_dir' => 0,
+				'option_field' => 'dir_search_fields'
+    ), $atts );
+
+
+		if (!empty($_GET['user_id'])) {
+
+			$user_id = (int) $_GET['user_id'];
+
+			if (empty($atts['on_dir']))
+				return do_shortcode('[nhpa_user_profile user_id="'.$user_id.'"]');
+			else
+				return;
+		}
+
+		//d($content);
+		if (empty($atts['option_field']))
+			$atts['option_field'] = 'dir_search_fields';
 		//global $wpdb;
 		$titan = TitanFramework::getInstance( 'pmpro_nhpa_opts' );
-		$search_fields = ( empty($titan->getOption( 'dir_search_fields' )) ? "" : $titan->getOption( 'dir_search_fields' ) );
+		$search_fields = ( empty($titan->getOption( $atts['option_field'] )) ? "" : $titan->getOption( $atts['option_field'] ) );
 
 		if (empty($search_fields))
 			return;
@@ -188,6 +227,12 @@ class NHPA_Directory_Search
 
 	}
 
+	public function view_profile_func() {
+
+
+
+	}
+
 	public static function organize_fields($fields_data = "") {
 
 		if (empty($fields_data))
@@ -202,12 +247,20 @@ class NHPA_Directory_Search
 			foreach ($search_fields as $key => $search_field) {
 
 				$search_field = explode("|", $search_field);
-
 				array_walk($search_field, function(&$item, $key) {
 
-					$item = str_replace(' ', '', $item);
+					if ($key === 3 || $key === 0) {
 
-			    $item = preg_replace('/[^\w,]/', '', $item);
+							$item = str_replace(' ', '', $item);
+					    $item = preg_replace('/[^\w,]/', '', $item);
+
+					}
+
+					// if ($key !== 1) {
+					// 	//$item = str_replace(' ', '', $item);
+					// 	$item = $item;
+				  //   // $item = preg_replace('/[^\w,]/', '', $item);
+					// }
 
 
 				});
@@ -217,6 +270,10 @@ class NHPA_Directory_Search
 
 				if ((strcmp($search_field[0], "select") == 0))
 					$html .= self::add_select_type($search_field, $key_count);
+
+				if ((strcmp($search_field[0], "select_array") == 0))
+					$html .= self::add_select_array_type($search_field, $key_count);
+
 
 			}
 
@@ -228,6 +285,98 @@ class NHPA_Directory_Search
 
 
 	}
+
+	private static function add_select_array_type($search_field = "", $key_count) {
+
+		if (empty($search_field))
+			return;
+
+		if (count($search_field) != 4)
+			return;
+
+			$key_count = (int) $key_count;
+
+			$html_opts = "";
+
+			if (strcmp($search_field[3], "auto") === 0)
+				$html_opts = self::generate_select_array_auto($search_field[2]);
+			else {
+
+				//echo $search_field[3];
+
+				$select_opts = explode(",",  $search_field[3]);
+
+				foreach ($select_opts as $key => $option) {
+					$html_opts .= "<option>".$option."</option>";
+				}
+
+			}
+
+
+					$html = '  <div class="form-group row">
+					<label for="select-input-'.$key_count.'" class="col-sm-2 col-form-label">'.$search_field[1].'</label>
+					<div class="col-sm-10">
+
+					<select multiple="multiple" data-select_array="1" data-meta_field="'.$search_field[2].'" multiple class="form-control" id="select-input-'.$key_count.'">';
+
+					$html .= $html_opts;
+
+					$html .='</select>
+					</div>
+			</div>';
+
+
+
+			return $html;
+
+	}
+
+	public static function generate_select_array_auto($meta_key = null) {
+
+		if (empty($meta_key))
+			return;
+
+			global $wpdb;
+
+			$prefix = $wpdb->get_blog_prefix();
+
+			$results = $wpdb->get_results( "SELECT * FROM `{$prefix}usermeta` WHERE meta_key = '{$meta_key}' ", OBJECT );
+
+			if (empty($results))
+				return;
+
+				$values = array();
+
+				foreach ($results as $key => $result) {
+
+					$result_meta = maybe_unserialize($result->meta_value);
+					$result_meta = ( is_array($result_meta) ? $result_meta : array() );
+					foreach ($result_meta as $key => $single_meta) {
+
+						$item = preg_replace("/[^ \w]+/", "", $single_meta);
+						$item = $single_meta;
+						if (in_array($item, $values))
+							continue;
+
+						$values[] = $item;
+
+					}
+
+				}
+
+			$values = array_filter($values);
+
+			$html_val = "";
+			foreach ($values as $key => $value) {
+				$html_val .= "<option>".$value."</option>";
+			}
+
+			return $html_val;
+
+
+	}
+
+
 
 	private static function add_text_type($search_field = "", $key_count) {
 
@@ -252,6 +401,8 @@ class NHPA_Directory_Search
 
 	}
 
+
+
 	private static function add_select_type($search_field = "", $key_count) {
 
 		if (empty($search_field))
@@ -270,6 +421,7 @@ class NHPA_Directory_Search
 				//echo $search_field[3];
 
 				$select_opts = explode(",",  $search_field[3]);
+				$html_opts .= "<option></option>";
 
 				foreach ($select_opts as $key => $option) {
 					$html_opts .= "<option>".$option."</option>";
@@ -282,7 +434,7 @@ class NHPA_Directory_Search
 					<label for="select-input-'.$key_count.'" class="col-sm-2 col-form-label">'.$search_field[1].'</label>
 					<div class="col-sm-10">
 
-					<select data-meta_field="'.$search_field[2].'" multiple class="form-control" id="select-input-'.$key_count.'">';
+					<select data-meta_field="'.$search_field[2].'" class="form-control" id="select-input-'.$key_count.'">';
 
 					$html .= $html_opts;
 
@@ -313,7 +465,8 @@ class NHPA_Directory_Search
 
 				foreach ($results as $key => $result) {
 
-					$item = preg_replace("/[^ \w]+/", "", $result->meta_value);
+					//$item = preg_replace("/[^ \w]+/", "", $result->meta_value);
+					$item = $result->meta_value;
 
 					if (in_array($item, $values))
 						continue;
@@ -324,6 +477,7 @@ class NHPA_Directory_Search
 			$values = array_filter($values);
 
 			$html_val = "";
+			$html_val .= "<option></option>";
 
 			foreach ($values as $key => $value) {
 				$html_val .= "<option>".$value."</option>";

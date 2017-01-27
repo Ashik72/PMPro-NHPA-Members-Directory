@@ -27,6 +27,8 @@
                </div>
 
               <button type="submit" class="btn btn-primary">Submit</button>
+              <button type="reset" class="btn btn-primary">Reset</button>
+
             </form>
 
 
@@ -49,6 +51,7 @@ $html .= '<div class="container"><div class="row navigate_dir">        <div clas
     <div class="col-xs-2 nextList"><a href="?get_next=">Next</a></div></div></div>';
 $html .= "</div>";
 
-_e($html);
+if (empty($opts['on_dir']))
+  _e($html);
 
  ?>
