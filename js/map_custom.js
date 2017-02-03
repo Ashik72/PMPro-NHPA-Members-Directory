@@ -1,68 +1,231 @@
-function initMap() {
-    var map;
-    var bounds = new google.maps.LatLngBounds();
-    var mapOptions = {
-        mapTypeId: 'roadmap'
+jQuery(document).ready(function($) {
+
+var mapWorks = {
+
+  init: function() {
+
+    this.report_map_area_px();
+    this.init_gmap();
+    this.click_on_addr();
+
+  },
+
+  report_map_area_px: function() {
+
+    if ($(".map_template .col-sm-8").length < 1)
+      return;
+
+    $(".map_template .col-sm-8").attr('data-width', $(".map_template .col-sm-8").width());
+
+  },
+
+  init_gmap: function() {
+
+    var data_initial_address = $("#map_canvas_list_data").data("initial_address");
+    var locate_user_pos = $("#map_canvas_list_data").data("locate_user_pos");
+    var initial_load = $("#map_canvas_list_data").data("initial_load");
+
+    locate_user_pos = parseInt(locate_user_pos);
+    initial_load = parseInt(initial_load);
+
+    console.log(data_initial_address);
+    console.log(initial_load);
+
+
+    var data = {
+      'action' : 'geocode_location',
+      'address' : data_initial_address
     };
 
+    jQuery.post(nhpa_plugin_data.ajax_url, data, function(response) {
 
-    // Display a map on the web page
-    map = new google.maps.Map(document.getElementById("mapCanvas"), mapOptions);
-    map.setTilt(50);
 
-    // Multiple markers location, latitude, and longitude
-    var markers = [
-        ['Brooklyn Museum, NY', 40.671531, -73.963588],
-        ['Brooklyn Public Library, NY', 40.672587, -73.968146],
-        ['Prospect Park Zoo, NY', 40.665588, -73.965336]
-    ];
+      response = $.parseJSON(response);
 
-    // Info window content
-    var infoWindowContent = [
-        ['<div class="info_content">' +
-        '<h3>Brooklyn Museum</h3>' +
-        '<p>The Brooklyn Museum is an art museum located in the New York City borough of Brooklyn.</p>' + '</div>'],
-        ['<div class="info_content">' +
-        '<h3>Brooklyn Public Library</h3>' +
-        '<p>The Brooklyn Public Library (BPL) is the public library system of the borough of Brooklyn, in New York City.</p>' +
-        '</div>'],
-        ['<div class="info_content">' +
-        '<h3>Prospect Park Zoo</h3>' +
-        '<p>The Prospect Park Zoo is a 12-acre (4.9 ha) zoo located off Flatbush Avenue on the eastern side of Prospect Park, Brooklyn, New York City.</p>' +
-        '</div>']
-    ];
+      console.log(response);
 
-    // Add multiple markers to map
-    var infoWindow = new google.maps.InfoWindow(), marker, i;
+      var map = "";
 
-    // Place each marker on the map
-    for( i = 0; i < markers.length; i++ ) {
-        var position = new google.maps.LatLng(markers[i][1], markers[i][2]);
-        bounds.extend(position);
-        marker = new google.maps.Marker({
-            position: position,
-            map: map,
-            title: markers[i][0]
+      if (response == null) {
+        map = new GMaps({
+          div: '#map_canvas_nhpa',
+          lat: 90,
+          lng: 23
+
         });
 
-        // Add info window to marker
-        google.maps.event.addListener(marker, 'click', (function(marker, i) {
-            return function() {
-                infoWindow.setContent(infoWindowContent[i][0]);
-                infoWindow.open(map, marker);
-            }
-        })(marker, i));
+        window.gmap = map;
 
-        // Center the map to fit all markers on the screen
-        map.fitBounds(bounds);
-    }
+      } else {
 
-    // Set zoom level
-    var boundsListener = google.maps.event.addListener((map), 'bounds_changed', function(event) {
-        this.setZoom(14);
-        google.maps.event.removeListener(boundsListener);
+        map = new GMaps({
+          div: '#map_canvas_nhpa',
+          lat: response.lat,
+          lng: response.long
+        });
+
+
+        window.gmap = map;
+
+      }
+
+
+      var centerSet = 0;
+      if (locate_user_pos > 0) {
+
+        GMaps.geolocate({
+          success: function(position) {
+            map.setCenter(position.coords.latitude, position.coords.longitude);
+          }
+        });
+
+        centerSet++;
+      }
+
+      var total_addr = $("#map_canvas_list_data .single_address").length;
+
+      total_addr = ( (initial_load == -1) ? total_addr : initial_load);
+
+      $("#map_canvas_list_data .single_address").each(function(i, el) {
+
+        if (i > total_addr)
+          return;
+
+        var data = {
+          'action' : 'geocode_location',
+          'address' : $(this).data("addr")
+        };
+
+        jQuery.post(nhpa_plugin_data.ajax_url, data, function(response_marker) {
+
+          response_marker = $.parseJSON(response_marker);
+
+          if (response_marker == null)
+            return;
+
+          if (centerSet == 0) {
+
+            // GMaps.geolocate({
+            //   success: function(position) {
+            //     map.setCenter(response.lat, response.long);
+            //   }
+            // });
+
+              map.setCenter(response.lat, response.long);
+
+            centerSet++;
+
+          }
+
+
+            $("#map_canvas_list_data .single_address").each(function(i, el) {
+
+              var geocode = $(this).data('geocode');
+
+              if (geocode.length == 0)
+                return;
+
+                geocode = geocode.split('|');
+
+              var htmlInfo = $(this).html();
+
+              map.addMarker({
+                lat: geocode[0],
+                lng: geocode[1],
+                title: ""+i+"",
+                click: function(e) {
+                  //alert('You clicked in this marker');
+                  //console.log(this);
+
+                },
+                infoWindow: {
+                    content: htmlInfo
+                }
+              });
+
+            })
+
+
+            window.gmap.setZoom(1);
+
+        })
+
+      });
+
+
+
     });
 
+
+
+  },
+
+  click_on_addr: function() {
+
+    $(document).on("click", "#map_canvas_list_data .single_address", function(evt) {
+
+      var data = {
+        'action' : 'geocode_location',
+        'address' : $(this).data("addr")
+      };
+
+      var clickThis = $(this);
+
+      var thisHtml = clickThis.html();
+
+      clickThis.html("Loading...");
+      clickThis.removeClass("single_addresshovered");
+
+      jQuery.post(nhpa_plugin_data.ajax_url, data, function(response_marker) {
+
+        response_marker = $.parseJSON(response_marker);
+
+        if (response_marker == null) {
+
+          alert("No address found on map!");
+
+          return;
+
+        }
+
+          console.log(response_marker);
+
+
+          window.gmap.setCenter(response_marker.lat, response_marker.long);
+
+          window.gmap.setZoom(30);
+
+          window.gmap.addMarker({
+            lat: response_marker.lat,
+            lng: response_marker.long,
+            title: response_marker.lat+" , "+response_marker.long,
+            click: function(e) {
+              //alert('You clicked in this marker');
+              //console.log(this);
+
+            },
+            infoWindow: {
+                content: thisHtml
+            }
+          });
+
+
+      }).complete(function() {
+
+        clickThis.html(thisHtml);
+
+        clickThis.addClass("single_addresshovered");
+
+      })
+
+
+     })
+
+
+  }
+
 }
-// Load initialize function
-//google.maps.event.addDomListener(window, 'load', initMap);
+
+mapWorks.init();
+
+});

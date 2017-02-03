@@ -5,6 +5,11 @@ if(!defined('WPINC')) // MUST have WordPress.
 
 use Ivory\GoogleMap;
 use Ivory\GoogleMap\Map;
+use Ivory\GoogleMap\Service\Geocoder\GeocoderService;
+use Http\Adapter\Guzzle6\Client;
+use Http\Message\MessageFactory\GuzzleMessageFactory;
+use Ivory\GoogleMap\Service\Geocoder\Request\GeocoderAddressRequest;
+
 /**
  * Directory MAP
  */
@@ -14,87 +19,68 @@ class NHPA_Map {
 
 
     $atts = shortcode_atts( array(
-      'limit' => '10',
-      'height' => '400px'
+      'height' => '400px',
+			'address_meta' => 'homeaddress',
+			'limit' => 0,
+			'initial_load' => 10,
+			'initial_address' => '',
+			'sidebar_meta' => 'Name, name|Address, address |Office Phone , office_phone',
+			'locate_user_pos' => 0
     ), $atts, 'nhpa_map' );
+
+		$address_meta = $atts['address_meta'];
 
     ob_start();
 
-    ?>
+		$explode_addr = explode("|", $address_meta);
 
-    <div id="mapCanvas" style="height: <?php _e($atts['height']); ?>;"></div>
+		$explode_addr = ( (count($explode_addr) > 1) ? $explode_addr : $explode_addr[0] );
 
-    <script type="text/javascript">
-    function initMap() {
-        var map;
-        var bounds = new google.maps.LatLngBounds();
-        var mapOptions = {
-            mapTypeId: 'roadmap'
-        };
 
-        // Display a map on the web page
-        map = new google.maps.Map(document.getElementById("mapCanvas"), mapOptions);
-        map.setTilt(50);
 
-        // Multiple markers location, latitude, and longitude
-        var markers = [
-            ['Brooklyn Museum, NY', 40.671531, -73.963588],
-            ['Brooklyn Public Library, NY', 40.672587, -73.968146],
-            ['Prospect Park Zoo, NY', 40.665588, -73.965336]
-        ];
+		$the_users = get_users([ 'number' => 10, 'fields' => ['ID'], 'orderby' => 'registered' ]);
 
-        // Info window content
-        var infoWindowContent = [
-            ['<div class="info_content">' +
-            '<h3>Brooklyn Museum</h3>' +
-            '<p>The Brooklyn Museum is an art museum located in the New York City borough of Brooklyn.</p>' + '</div>'],
-            ['<div class="info_content">' +
-            '<h3>Brooklyn Public Library</h3>' +
-            '<p>The Brooklyn Public Library (BPL) is the public library system of the borough of Brooklyn, in New York City.</p>' +
-            '</div>'],
-            ['<div class="info_content">' +
-            '<h3>Prospect Park Zoo</h3>' +
-            '<p>The Prospect Park Zoo is a 12-acre (4.9 ha) zoo located off Flatbush Avenue on the eastern side of Prospect Park, Brooklyn, New York City.</p>' +
-            '</div>']
-        ];
+		if (empty($atts['limit']))
+			$the_users = get_users([ 'exclude'=> [1], 'fields' => ['ID'], 'orderby' => 'registered' ]);
+		else
+			$the_users = get_users([ 'exclude'=> [1], 'number' => $atts['limit'], 'fields' => ['ID'], 'orderby' => 'registered' ]);
 
-        // Add multiple markers to map
-        var infoWindow = new google.maps.InfoWindow(), marker, i;
+		$user_address = "";
+		$user_address_array = [];
 
-        // Place each marker on the map
-        for( i = 0; i < markers.length; i++ ) {
-            var position = new google.maps.LatLng(markers[i][1], markers[i][2]);
-            bounds.extend(position);
-            marker = new google.maps.Marker({
-                position: position,
-                map: map,
-                title: markers[i][0]
-            });
+		foreach ($the_users as $key => $the_user_id) {
 
-            // Add info window to marker
-            google.maps.event.addListener(marker, 'click', (function(marker, i) {
-                return function() {
-                    infoWindow.setContent(infoWindowContent[i][0]);
-                    infoWindow.open(map, marker);
-                }
-            })(marker, i));
+			if (!is_array($explode_addr))
+				$user_address = self::user_address_from_single_meta($the_user_id->ID, $explode_addr);
+			else
+				$user_address = self::user_address_from_multiple_meta($the_user_id->ID, $explode_addr);
 
-            // Center the map to fit all markers on the screen
-            map.fitBounds(bounds);
-        }
+			if (empty($user_address))
+				countinue;
 
-        // Set zoom level
-        var boundsListener = google.maps.event.addListener((map), 'bounds_changed', function(event) {
-            this.setZoom(14);
-            google.maps.event.removeListener(boundsListener);
-        });
+			if (!empty($user_address)) {
 
-    }
-    // Load initialize function
-    google.maps.event.addDomListener(window, 'load', initMap);
+				if ($key < $atts['initial_load'])
+					$geoCoder = self::geoCoder($user_address);
+				else
+					$geoCoder = 1;
 
-    </script>
-    <?php
+
+				if (!empty($geoCoder))
+					$user_address_array[] = [ 'id' => (int) $the_user_id->ID , 'address' => $user_address, 'geocode' => $geoCoder ];
+
+
+			}
+
+		}
+
+		$user_address_array = array_filter($user_address_array);
+
+		//d($user_address_array);
+
+		include pmpro_nhpa_PLUGIN_DIR."template".DS."map_template.php";
+
+		self::do_map();
 
     $output = ob_get_clean();
 
@@ -102,7 +88,104 @@ class NHPA_Map {
 
   }
 
+	private static function do_map() {
 
+	}
+
+	private static function user_address_from_single_meta($user_id = null, $address_meta = "") {
+
+		if (empty($user_id) || empty($address_meta))
+			return;
+
+			$user_address = get_user_meta($user_id, $address_meta, true);
+
+			if (empty($user_address))
+				return;
+
+			return $user_address;
+
+	}
+
+	private static function user_address_from_multiple_meta($user_id = null, $address_meta = "") {
+
+		if (empty($user_id) || empty($address_meta))
+			return;
+
+			$user_address = [];
+
+		foreach ($address_meta as $key => $single_address_meta) {
+
+			$user_address[] = get_user_meta($user_id, $single_address_meta, true);
+
+		}
+
+		$total_count = count($user_address);
+		$initial_empty_count = 0;
+
+		foreach ($user_address as $key => $user_address_smeta) {
+
+			if (empty($user_address_smeta)) {
+
+				unset($user_address[$key]);
+
+				$initial_empty_count++;
+			}
+
+		}
+
+		if ($initial_empty_count === $total_count)
+			return;
+
+			if (empty($user_address))
+				return;
+
+			$user_address = implode(", ", $user_address);
+
+			return $user_address;
+
+	}
+
+	public function geoCoderJSON() {
+
+		$address = $_POST['address'];
+
+		if (empty($address))
+			wp_die();
+
+		echo json_encode(self::geoCoder($address, 0));
+
+		wp_die();
+
+	}
+
+	public static function geoCoder($address = "" , $json = false) {
+
+		if (empty($address))
+			return;
+
+
+$geocoder = new GeocoderService(new Client(), new GuzzleMessageFactory());
+$request = new GeocoderAddressRequest($address);
+$response = $geocoder->geocode($request);
+
+	if (empty($response->hasResults()))
+		return;
+
+if (empty($response->getResults()[0]))
+	return;
+
+$result = $response->getResults()[0];
+
+
+if (empty($result->getGeometry()->getLocation()->getLatitude()) || empty($result->getGeometry()->getLocation()->getLongitude()))
+	return;
+
+	if (!$json)
+		return ['lat' => $result->getGeometry()->getLocation()->getLatitude(), 'long' => $result->getGeometry()->getLocation()->getLongitude()] ;
+	else
+		return json_encode(['lat' => $result->getGeometry()->getLocation()->getLatitude(), 'long' => $result->getGeometry()->getLocation()->getLongitude()]);
+
+	}
 
 }
 

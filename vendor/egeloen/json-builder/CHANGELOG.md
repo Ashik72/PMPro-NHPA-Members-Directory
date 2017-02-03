@@ -1,5 +1,19 @@
 # CHANGELOG
 
+### 2.0.1 (2015-12-06)
+
+ * 86cd2b8 - Add Symfony3 support
+ 
+### 2.0.0 (2014-12-29)
+
+ * e1ac92e - [Travis] Add composer prefer lowest build
+ * 92046ec - [Travis] Move Symfony 2.6.*@dev to 2.6.*
+ * 57ae312 - [Travis] Update config
+ * 29c1dec - Add .gitattributes
+ * d858e7e - [Readme] Fix badge uri
+ * 9ad976d - [Composer] Rely on autoload-dev
+ * 1a9b3f2 - [Encapsulation] Move everything from protected to private (except for entry point)
+
 ### 1.0.3 (2014-11-08)
 
  * 1ad3abb - [Gitignore] Remove Composer installer and phar

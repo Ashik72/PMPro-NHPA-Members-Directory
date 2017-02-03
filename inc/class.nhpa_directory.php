@@ -55,6 +55,9 @@ public static function get_instance() {
 		add_action( 'wp_ajax_do_pagination_check', array($this, 'do_pagination_check_callback') );
     add_action( 'wp_ajax_nopriv_do_pagination_check', array($this, 'do_pagination_check_callback') );
 
+		add_action( 'wp_ajax_geocode_location', array('NHPA_Map', 'geoCoderJSON') );
+    add_action( 'wp_ajax_nopriv_geocode_location', array('NHPA_Map', 'geoCoderJSON') );
+
 
   }
 

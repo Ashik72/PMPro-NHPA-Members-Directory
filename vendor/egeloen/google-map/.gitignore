@@ -1,12 +1,10 @@
 # Composer
-/bin
 /composer.lock
 /vendor
 
+# PHP CS Fixer
+/.php_cs.cache
+
 # PHPUnit
 /phpunit.xml
-/clover.xml
-/report
-
-# Coveralls
-/coveralls.json
+/build
