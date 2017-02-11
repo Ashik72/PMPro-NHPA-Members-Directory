@@ -394,10 +394,11 @@ jQuery(document).ready(function($) {
         gather_data.push({ 'meta' : select_meta, 'value' : select_val, 'title' : input_title });
 
       })
-
+      var wp_page_id = parseInt($(".load_nhpa_pmpro_members").data("wp_page_id"));
       var data = {
         'action' : 'search_grab_matched_users',
-        'search_params' : gather_data
+        'search_params' : gather_data,
+        'wp_page_id' : wp_page_id
       };
 
       if ($(".container.searchParams").length == 0)
@@ -426,7 +427,7 @@ jQuery(document).ready(function($) {
       })
 
       jQuery.post(nhpa_plugin_data.ajax_url, data, function(response) {
-
+        console.log(response);
         response = $.parseJSON(response);
 
         $(".container.searchParams").append("<div class='row'>Total Results: "+response.length+"</div>")

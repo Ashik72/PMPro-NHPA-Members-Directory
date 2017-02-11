@@ -193,7 +193,7 @@ var mapWorks = {
 
           window.gmap.setCenter(response_marker.lat, response_marker.long);
 
-          window.gmap.setZoom(30);
+          window.gmap.setZoom(20);
 
           window.gmap.addMarker({
             lat: response_marker.lat,

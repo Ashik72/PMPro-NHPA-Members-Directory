@@ -72,6 +72,43 @@ class NHPA_Directory_Search
 			else
 				$final_result = self::unionSearchResult($search_results);
 
+				$titan = TitanFramework::getInstance( 'pmpro_nhpa_opts' );
+				$directory_page_id = ( empty($titan->getOption( 'page_id_for_filter' )) ? "" : $titan->getOption( 'page_id_for_filter' ) );
+				$wp_page_id = ( empty($_POST['wp_page_id']) ? "" : $_POST['wp_page_id'] );
+
+				if ($wp_page_id == $directory_page_id) {
+
+					$final_result = ( is_array($final_result) ? $final_result : array() );
+
+					$filtered_user_id = array();
+
+					$exclude_membership_levels = ( empty($titan->getOption( 'exclude_membership_levels' )) ? "" : $titan->getOption( 'exclude_membership_levels' ) );
+					$exclude_membership_levels = explode(",", $exclude_membership_levels);
+					//if (pmpro_hasMembershipLevel($membership_level , $current_user_id))
+					$exclude_membership_levels = ( is_array($exclude_membership_levels) ? $exclude_membership_levels : array() );
+					$exclude_membership_levels = array_map('intval', $exclude_membership_levels);
+
+
+					foreach ($final_result as $key => $user_id) {
+
+						$user_id = (int) $user_id;
+
+						$user_id_not_exists = 0;
+
+						$user_id_not_exists = NHPA_Directory::user_is_not_specified_member($exclude_membership_levels, $user_id);
+
+
+						if ($user_id_not_exists)
+							$filtered_user_id[] = $user_id;
+
+
+					}
+
+					$final_result = $filtered_user_id;
+
+				}
+
+
 				//$number = ( empty($_POST['limit']) ? "" : $_POST['limit'] );
 				$number = "";
 		    $offset = ( empty($_POST['offset']) ? "" : $_POST['offset'] );
@@ -218,7 +255,6 @@ class NHPA_Directory_Search
 
 		ob_start();
 
-
 		include pmpro_nhpa_PLUGIN_DIR."template".DS."search_template.php";
 
 		$output = ob_get_clean();
@@ -247,13 +283,15 @@ class NHPA_Directory_Search
 			foreach ($search_fields as $key => $search_field) {
 
 				$search_field = explode("|", $search_field);
+
 				array_walk($search_field, function(&$item, $key) {
 
-					if ($key === 3 || $key === 0) {
+					if ( $key === 0) {
 
 							$item = str_replace(' ', '', $item);
 					    $item = preg_replace('/[^\w,]/', '', $item);
-
+					} elseif ($key === 3) {
+							$item = trim($item);
 					}
 
 					// if ($key !== 1) {

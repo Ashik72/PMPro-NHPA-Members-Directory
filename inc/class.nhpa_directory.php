@@ -359,7 +359,7 @@ public static function get_instance() {
 	    //d(self::user_is_not_specified_member([3,14], 340));
 	  }
 
-	private function user_is_not_specified_member($membership_levels = NULL, $user_id = NULL) {
+	public function user_is_not_specified_member($membership_levels = NULL, $user_id = NULL) {
 
 		if (empty($membership_levels) || empty($user_id))
 			return 0;
