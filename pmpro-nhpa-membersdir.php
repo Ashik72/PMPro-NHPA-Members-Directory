@@ -9,7 +9,6 @@ Author URI: https://www.upwork.com/companies/~01caf98798b24dd9af
 License: GPLv2 or later
 Text Domain: pmpro_nhpa
 */
-
 if(!defined('WPINC')) // MUST have WordPress.
 	exit('Do NOT access this file directly: '.basename(__FILE__));
 
@@ -42,3 +41,5 @@ if ( in_array( 'paid-memberships-pro/paid-memberships-pro.php', apply_filters( '
 	//add_action( 'plugins_loaded', array( 'MYPLUG', 'get_instance' ) );
 
 }
+
+d("test");
