@@ -394,8 +394,37 @@ public static function get_instance() {
 
 		}
 
+		$titan = TitanFramework::getInstance( 'pmpro_nhpa_opts' );
+		$titan_ajax = $titan->getOption( 'enable_dir_ajax' );
 
-    $html = "";
+		$html = "";
+
+			if ($titan_ajax)
+				$html = $this->return_for_ajax($atts, $user_id, $_GET);
+			else
+				$html = $this->return_for_php($atts, $user_id, $_GET);
+
+
+      return $html;
+
+  }
+
+	public function return_for_php($atts = null, $user_id = null, $get = null) {
+
+			ob_start();
+
+			include pmpro_nhpa_PLUGIN_DIR."template".DS."php_dir.php";
+
+			$output = ob_get_clean();
+      return $output;
+
+	}
+
+	public function return_for_ajax($atts = null, $user_id = null, $get = null) {
+
+		$_GET = $get;
+
+		$html = "";
 
     $html .= "<div class='load_nhpa_pmpro_members' data-wp_page_id='".get_the_ID()."' data-limit='".$atts['limit']."'>";
     $html .= '<div class="container"><div class="row block_input">';
@@ -432,10 +461,9 @@ public static function get_instance() {
 		$html .= '</div>   </div></div>';
     $html .= "</div>";
 
+		return $html;
 
-      return $html;
-
-  }
+	}
 
   public static function get_single_profile_basic($user_id = null) {
 
@@ -467,9 +495,11 @@ public static function get_instance() {
     $user_homeaddress = ( empty($user_data['homeaddress'][0]) ? "" : $user_data['homeaddress'][0]);
     $user_homecityaddress = ( empty($user_data["homecityaddress"][0]) ? "" : $user_data["homecityaddress"][0]);
 		$nhregion = ( empty($user_data['nhregion'][0]) ? "" : maybe_unserialize($user_data['nhregion'][0]) );
-		$nhregion = implode(" , ", $nhregion);
 
-    // d($user_data);
+		if (!empty($nhregion))
+			$nhregion = implode(" , ", $nhregion);
+
+	  // d($user_data);
     // d($image_url);
 
     $html_single = '<div class="single_member_profile">
@@ -479,8 +509,8 @@ public static function get_instance() {
         <div class="col-xs-5">
 
           <div class="full_name"><strong>'.$user_data['first_name'][0].' '.$user_data['last_name'][0].'</strong></div>
-          <div class="user_pro_degree"><span><strong>'.$user_profession.'</strong></span>, <span><strong>'.$user_degree.'</strong></span></div>
-					<div class="user_pro_degree"><span><strong>'.$user_data['_line1'][0].'</strong></span>, <span><strong>'.$user_data['city'][0].'</strong></span></div>
+          <div class="user_pro_degree"><span><strong>'.$user_profession.'</strong></span>'. ( empty($user_degree) ? "" : "," ) .' <span><strong>'.$user_degree.'</strong></span></div>
+					<div class="user_pro_degree"><span><strong>'.$user_data['_line1'][0].'</strong></span>'. ( empty($user_data['city'][0]) ? "" : "," ) .' <span><strong>'.$user_data['city'][0].'</strong></span></div>
 					<div class="user_pro_degree"><span><strong>'.$nhregion.'</strong></span></div>
 
           <!--<div class="user_bio"><strong>'.$user_bio.'</strong></div>-->
@@ -490,7 +520,7 @@ public static function get_instance() {
 
         <div class="user_phone"><strong>'.$user_phone.'</strong></div>
 				<div class="user_address">'.$user_data['_state'][0].'</div>
-				<div class="user_address">'.$user_homeaddress.', '.$user_homecityaddress.'</div>
+				<div class="user_address">'.$user_homeaddress. ( empty($user_homecityaddress) ? "" : ", " ) .$user_homecityaddress.'</div>
 
         <div class="view_profile"><button data-user="'.$uid.'" type="button" class="btn btn-primary btn-sm">'.__("View Profile", "pmpro_nhpa").'</button></div>
 
@@ -539,9 +569,13 @@ public static function get_instance() {
 
   public function load_custom_wp_frontend_style() {
 
+		$titan = TitanFramework::getInstance( 'pmpro_nhpa_opts' );
+		$titan_ajax = $titan->getOption( 'enable_dir_ajax' );
+
     wp_register_script( 'pmpro-nhpa-script', pmpro_nhpa_PLUGIN_URL.'js/script_custom.js', array( 'jquery' ), '', true );
 
-    wp_localize_script( 'pmpro-nhpa-script', 'nhpa_plugin_data', array( 'ajax_url' => admin_url('admin-ajax.php'), 'pmpro_nhpa_PLUGIN_URL' => pmpro_nhpa_PLUGIN_URL ));
+
+    wp_localize_script( 'pmpro-nhpa-script', 'nhpa_plugin_data', array( 'ajax_url' => admin_url('admin-ajax.php'), 'pmpro_nhpa_PLUGIN_URL' => pmpro_nhpa_PLUGIN_URL, 'enable_disable_ajax' => $titan_ajax ));
 
     wp_enqueue_script( 'pmpro-nhpa-script' );
 

@@ -1,7 +1,7 @@
 <?php
 
 if(!defined('WPINC')) // MUST have WordPress.
-	exit('Do NOT access this file directly: '.basename(__FILE__));
+  exit('Do NOT access this file directly: '.basename(__FILE__));
 
 /**
  * User Profile
@@ -14,25 +14,27 @@ class NHPA_User_Profile
   public static function NHPA_User_Profile_func($atts) {
 
     $atts = shortcode_atts( array(
-  		'user_id' => get_current_user_id(),
-  	), $atts, 'nhpa_user_profile' );
+      'user_id' => get_current_user_id(),
+    ), $atts, 'nhpa_user_profile' );
 
     self::$user_id = $atts['user_id'];
-		//global $wpdb;
-		$titan = TitanFramework::getInstance( 'pmpro_nhpa_opts' );
-		$profile_structure = ( empty($titan->getOption( 'dir_single_member_profile' )) ? "" : $titan->getOption( 'dir_single_member_profile' ) );
-
-		if (empty($profile_structure))
-			return;
-
-		ob_start();
+    //global $wpdb;
+    $titan = TitanFramework::getInstance( 'pmpro_nhpa_opts' );
 
 
-		//include pmpro_nhpa_PLUGIN_DIR."template".DS."search_template.php";
+    $profile_structure = ( empty($titan->getOption( 'dir_single_member_profile' )) ? "" : $titan->getOption( 'dir_single_member_profile' ) );
+
+    if (empty($profile_structure))
+      return;
+
+    ob_start();
+
+
+    //include pmpro_nhpa_PLUGIN_DIR."template".DS."search_template.php";
     $profile_structure = explode("--section_end--", $profile_structure);
     $profile_structure = array_filter($profile_structure);
     if (empty($profile_structure))
-			return;
+      return;
 
     $profile_structure = ( is_array($profile_structure) ? $profile_structure : array() );
 
@@ -67,11 +69,11 @@ class NHPA_User_Profile
 
     _e($html);
 
-		$output = ob_get_clean();
+    $output = ob_get_clean();
 
-		return $output;
+    return $output;
 
-	}
+  }
 
   private static function attach_image($user_id) {
 
@@ -86,19 +88,321 @@ class NHPA_User_Profile
       $image_url = wp_get_attachment_url($avatar_id);
 
       $image_url = ( empty($image_url) ? pmpro_nhpa_PLUGIN_URL.'img/propic.png' : $image_url );
+      $first_name = get_user_meta($user_id, 'first_name', true);
+      $last_name = get_user_meta($user_id, 'last_name', true);
+	  $user_info = get_userdata($user_id);
+         $email = $user_info->user_email;
+
+      $address = get_user_meta($user_id, 'line1', true);
+      $county = get_user_meta($user_id, 'line2', true);
+      $city = get_user_meta($user_id, 'city', true);
+      $zip = get_user_meta($user_id, 'zip', true);
+      $state = get_user_meta($user_id, 'state', true);
+      $nhregion = get_user_meta($user_id, 'nhregion', true);
+      $phone = get_user_meta($user_id, 'phone', true);
+      $cellphone = get_user_meta($user_id, 'cellphone', true);
+      $fax = get_user_meta($user_id, 'fax', true);
+      $areasofpractice = get_user_meta($user_id, 'areasofpractice', true);
+      $approachorientation = get_user_meta($user_id, 'approachorientation', true);
+      $populationserved = get_user_meta($user_id, 'populationserved', true);
+      $languagesspoken = get_user_meta($user_id, 'languagesspoken', true);
+      $accepted_fee_arrangements = get_user_meta($user_id, 'accepted_fee_arrangements', true);
+      $yearofgraduation = get_user_meta($user_id, 'yearofgraduation', true);
+      $institutiongraduatedfrom = get_user_meta($user_id, 'institutiongraduatedfrom', true);
+      $yearoflicensure = get_user_meta($user_id, 'yearoflicensure', true);
+      $degree = get_user_meta($user_id, 'degree', true);
+      $highest_degree = get_user_meta($user_id, 'highest_degree', true);
+      $licensed = get_user_meta($user_id, 'licensed', true);
+      $profession = get_user_meta($user_id, 'profession', true);
+      $languagesspoken = get_user_meta($user_id, 'languagesspoken', true);
+      $preferredphone = get_user_meta($user_id, 'preferredphone', true);
+      $preferredmailingaddress = get_user_meta($user_id, 'preferredmailingaddress', true);
+      $description = get_user_meta($user_id, 'description', true);
+      $website = get_user_meta($user_id, 'website', true);
+      $boardmembership = get_user_meta($user_id, 'boardmembership', true);
+     // $city = get_user_meta($user_id, 'city', true);
+
+    global $current_user;
+    $current_user->membership_level = pmpro_getMembershipLevelForUser($user_id);
+    $member_level_id =   $current_user->membership_level->id;
+
+$originationURL = (isset($_POST['prePage']) && !empty($_POST['prePage'])) ? $_POST['prePage'] : "a-default-page.php";
+
+$a = $originationURL;
+
+if (strpos($a, 'find-a-psychologist') !== false) {
+    $pageis = 'find';
+}
+
+ $regular_members = array('3','21','20','13','24','25','4','26','27','5','30','31','6','34','35','7','8','9','10','11','12');
+ $psycho_members = array('3','21','20','13','24','25','4','26','27','5','30','31','6','34','35');
+
+ $upgrade_members = array('14','23','22','15','28','29','17','32','33','18','36','37','19');
 
 
+// = pmpro_getMembershipLevelForUser($user_id);
       $html_pic = "";
 
-      $html_pic .= '<div class="container showUserProfileSection user_pro_pic ">
-<div class="row">
-<div class="col-sm-3"><img data-uid="'.$user_id.'" src="'.$image_url.'" class="nhpa_profile_avatar">
+$html_pic .= '<div class="container member">
+        <div class="row">';
 
-</div></div></div>';
 
-      return $html_pic;
+
+
+if($pageis == 'find'){   // Find A Psycho
+
+  if (in_array($member_level_id, $regular_members)) :
+       $html_pic .= '
+        <div class="col-sm-3">
+            <img data-uid="'.$user_id.'" src="'.$image_url.'" class="nhpa_profile_avatar img-responsive">
+        </div>
+        <div class="col-sm-9 namediv">
+          <h2> '. $first_name .' '. $last_name .'</h2>
+          <p><strong>Profession:</strong> '. $profession . '</p>
+
+          <p><strong>Description</strong>:<br>'. $description .'</p>
+        </div>';
+
+       $html_pic .= '<div class="col-sm-9 col-sm-offset-3"><h4 class="separatordiv">Business Address & Professional Information</h4></div>';
+     //endif;
+
+
+   //  if($address || $state || $city) :
+
+      $html_pic .= '
+      <div class="col-sm-9 col-sm-offset-3 addresdiv">
+        <p><strong>Work County:</strong> <br> '. $county .' </p>
+      </div>';
+
+   //  endif;
+
+   //  if($nhregion) :
+      $html_pic .= '
+      <div class="col-sm-9 col-sm-offset-3 phonediv">
+         <p><strong>Work Phone:</strong>  ' . $phone . '</p>
+      </div>';
+
+   //  endif;
+
+  elseif (in_array($member_level_id, $upgrade_members)) :
+
+
+    // if($first_name || $last_name) :
+        $html_pic .= '
+        <div class="col-sm-3">
+            <img data-uid="'.$user_id.'" src="'.$image_url.'" class="nhpa_profile_avatar img-responsive">
+        </div>
+        <div class="col-sm-9 namediv">
+          <h2> '. $first_name .' '. $last_name .'</h2>
+          <p><strong>Profession:</strong> '. $profession . '</p>
+
+          <p><strong>Description</strong>:<br>'. $description .'</p>
+        </div>';
+
+      //endif;
+       $html_pic .= '<div class="col-sm-9 col-sm-offset-3"><h4 class="separatordiv">Business Address & Professional Information</h4></div>';
+
+     // if($address || $county || $state || $city || $zip) :
+        $html_pic .= '
+        <div class="col-sm-9 col-sm-offset-3 addresdiv">
+          <div class="row">
+            <div class="col-md-6">
+              <p><strong>Work Address:</strong> <br>' . $address .'<br>' . $city . ', ' . $state .', '. $zip .'</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Work Phone:</strong>  ' . $phone . '</p>
+                <p><strong>Fax:</strong>  ' . $fax . '</p>
+                <p><strong>Email:</strong>  ' . $email . '</p>
+            </div>
+          </div>
+        </div>';
+     //endif;
+
+      //if($nhregion) :
+
+        $html_pic .= '
+        <div class="col-sm-9 col-sm-offset-3 countydiv">
+          <p><strong>Work County:</strong>  ' . $county . '</p>
+        </div>';
+      //endif;
+
+       /* $html_pic .= '
+        <div class="col-sm-9 col-sm-offset-3 statediv">
+          <p><strong>State:</strong>  ' . $state . '</p>
+        </div>';
+
+         $html_pic .= '
+        <div class="col-sm-9 col-sm-offset-3 zipdiv">
+          <p><strong>Postal Code:</strong>  ' . $zip . '</p>
+        </div>';*/
+
+
+        $html_pic .= '
+        <div class="col-sm-9 col-sm-offset-3 regiondiv">
+         <p><strong>NH Region:</strong> '. $nhregion = implode(', ', $nhregion). ' </p>
+        </div>';
+
+        $html_pic .= '
+        <div class="col-sm-9 col-sm-offset-3 populationserveddiv">
+         <p><strong>Population Served:</strong> '. $populationserved = implode(', ', $populationserved). ' </p>
+        </div>';
+
+        $html_pic .= '
+        <div class="col-sm-9 col-sm-offset-3 areasofpracticediv">
+         <p><strong>Treatment & Practice Areas:</strong> '. $areasofpractice = implode(', ', $areasofpractice). ' </p>
+        </div>';
+
+        $html_pic .= '
+        <div class="col-sm-9 col-sm-offset-3 accepted_fee_arrangementsdiv">
+         <p><strong>Accepted Fee arrangements:</strong> '. $accepted_fee_arrangements  = implode(', ', $$accepted_fee_arrangements). ' </p>
+        </div>';
+
+          $html_pic .= '
+        <div class="col-sm-9 col-sm-offset-3 languagesspokendiv">
+          <p><strong>Languages Spoken:</strong>  ' . $languagesspoken . '</p>
+        </div>';
+
+  endif;
+
+}else{
+
+    // if($first_name || $last_name) :
+        $html_pic .= '
+        <div class="col-sm-3">
+            <img data-uid="'.$user_id.'" src="'.$image_url.'" class="nhpa_profile_avatar img-responsive">
+        </div>
+        <div class="col-sm-9 namediv">
+          <h2> '. $first_name .' '. $last_name .'</h2>
+          <p><strong>Profession:</strong> '. $profession . '</p>
+
+          <p><strong>Description</strong>:<br>'. $description .'</p>
+        </div>';
+
+      //endif;
+   $html_pic .= '<div class="col-sm-9 col-sm-offset-3"><h4 class="separatordiv">Business Address & Professional Information</h4></div>';
+     // if($address || $county || $state || $city || $zip) :
+        $html_pic .= '
+        <div class="col-sm-9 col-sm-offset-3 addresdiv">
+          <div class="row">
+            <div class="col-md-6">
+              <p><strong>Work Address:</strong> <br>' . $address .'<br>' . $city . ', ' . $state .', '. $zip .'</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Work Phone:</strong>  ' . $phone . '</p>
+                <p><strong>Fax:</strong>  ' . $fax . '</p>
+                <p><strong>Cell Phone:</strong>  ' . $cellphone . '</p>
+                <p><strong>Email:</strong>  ' . $email . '</p>
+            </div>
+          </div>
+        </div>
+
+
+
+        ';
+     //endif;
+
+      //if($nhregion) :
+
+        $html_pic .= '
+        <div class="col-sm-9 col-sm-offset-3 countydiv">
+          <p><strong>Work County:</strong>  ' . $county . '</p>
+        </div>';
+
+        $html_pic .= '
+        <div class="col-sm-9 col-sm-offset-3 regiondiv">
+         <p><strong>NH Region:</strong> '. $nhregion = implode(', ', $nhregion). ' </p>
+        </div>
+
+        <div class="gap"></div>
+
+        ';
+
+
+          $html_pic .= '
+        <div class="col-sm-9 col-sm-offset-3 highest_degreediv">
+          <p><strong>Highest Degree:</strong>  ' . $highest_degree . '</p>
+        </div>';
+
+          $html_pic .= '
+        <div class="col-sm-9 col-sm-offset-3 licenseddiv">
+          <p><strong>Are you licensed to practice psychology in NH?:</strong>  ' . $licensed . '</p>
+        </div>';
+
+         $html_pic .= '
+        <div class="col-sm-9 col-sm-offset-3 professiondiv">
+          <p><strong>Profession:</strong>  ' . $profession . '</p>
+        </div>';
+
+        /*$html_pic .= '
+        <div class="col-sm-9 degreediv">
+          <p><strong>Degree:</strong> '. $degree .'</p>
+        </div>';*/
+
+        $html_pic .= '
+        <div class="col-sm-9 col-sm-offset-3 languagesspokendiv">
+          <p><strong>Languages Spoken:</strong>  ' . $languagesspoken . '</p>
+        </div>';
+
+        $html_pic .= '
+        <div class="col-sm-9 col-sm-offset-3 preferredphonediv">
+          <p><strong>Preferred Phone:</strong>  ' . $preferredphone . '</p>
+        </div>';
+
+        $html_pic .= '
+        <div class="col-sm-9 col-sm-offset-3 preferredmailingaddressdiv">
+          <p><strong>Preferred Mailing Address:</strong>  ' . $preferredmailingaddress . '</p>
+        </div>';
+
+        $html_pic .= '
+        <div class="col-sm-9 col-sm-offset-3 populationserveddiv">
+         <p><strong>Population Served:</strong> '. $populationserved = implode(', ', $populationserved). ' </p>
+        </div>';
+
+        $html_pic .= '
+        <div class="col-sm-9 col-sm-offset-3 areasofpracticediv">
+         <p><strong>Treatment & Practice Areas:</strong> '. $areasofpractice = implode(', ', $areasofpractice). ' </p>
+        </div>';
+
+        $html_pic .= '
+        <div class="col-sm-9 col-sm-offset-3 accepted_fee_arrangementsdiv">
+         <p><strong>Accepted Fee Arrangements:</strong> '. $accepted_fee_arrangements = implode(', ', $accepted_fee_arrangements). ' </p>
+        </div>';
+
+         $html_pic .= '
+
+          <div class="gap"></div>
+
+         <div class="col-sm-9 col-sm-offset-3"><h4 class="separatordiv">Education</h4></div>';
+
+        $html_pic .= '
+        <div class="col-sm-9 col-sm-offset-3 yearofgraduationdiv">
+         <p><strong>Year of Graduation:</strong> '. $yearofgraduation . ' </p>
+        </div>';
+
+        $html_pic .= '
+        <div class="col-sm-9 col-sm-offset-3 institutiongraduatedfromdiv">
+         <p><strong>Institution Graduated From:</strong> '. $institutiongraduatedfrom .' </p>
+        </div>';
+
+        $html_pic .= '
+        <div class="col-sm-9 col-sm-offset-3 yearoflicensurediv">
+         <p><strong>Year of Licensure:</strong> '. $yearoflicensure .' </p>
+        </div>';
+
+         $html_pic .= '
+        <div class="col-sm-9 col-sm-offset-3 boardmembershipdiv">
+         <p><strong>NHPA Board/Committee Membership:</strong> '. $boardmembership .' </p>
+        </div>';
+
+
+
 
   }
+
+  $html_pic .= '</div></div>';
+
+  return $html_pic;
+}
 
   private static function Single_Profile_Section_RenderHeader($structure_0) {
 
@@ -110,14 +414,14 @@ class NHPA_User_Profile
     $html .= '<div class="row">
         <div class="col-sm-12 section_title">
 
-        <p class="navbar-text">'.( empty($structure_0[0]) ? "" : $structure_0[0] ).'</p>
+        <p class="navbar-text"><b>'.( empty($structure_0[0]) ? "</b>" : $structure_0[0] ).'</p>
 
         </div>
 
         </div>
 ';
 
-    return $html;
+   // return $html;
   }
 
 
@@ -125,7 +429,7 @@ class NHPA_User_Profile
   private static function Single_Profile_Section_Render($structure = "") {
 
     if (empty($structure))
-			return;
+      return;
 
     $structure_parent = ( empty($structure[0]) ? "" : explode("|", $structure[0]) );
     $structure_parent = array_filter($structure_parent, 'trim');
@@ -144,7 +448,7 @@ class NHPA_User_Profile
 
     }
 
-    return $html_header.self::SingleProfileHTML($structure);
+    //return $html_header.self::SingleProfileHTML($structure);
 
 
   }
@@ -250,10 +554,10 @@ class NHPA_User_Profile
         continue;
       }
 
-			if (strcmp($single_structure[1], "email") === 0) {
-				$user_info = get_userdata($user_id);
-				$get_data = $user_info->user_email;
-			}
+      if (strcmp($single_structure[1], "email") === 0) {
+        $user_info = get_userdata($user_id);
+        $get_data = $user_info->user_email;
+      }
 
 
       if (empty($get_data))
@@ -289,7 +593,7 @@ class NHPA_User_Profile
     }
 
 
-    return $html;
+   // return $html;
   }
 
 public static function geocode($address){
@@ -393,14 +697,14 @@ public static function geocode($address){
 
 
 
-		$output = ob_get_clean();
+    $output = ob_get_clean();
 
 
     return $output;
 
   }
 
-	public static function show_map_func($user_id, $location) {
+  public static function show_map_func($user_id, $location) {
 
     if (empty($location))
       return "No location_meta specified";
@@ -463,7 +767,7 @@ public static function geocode($address){
 
 
 
-		$output = ob_get_clean();
+    $output = ob_get_clean();
 
 
     return $output;

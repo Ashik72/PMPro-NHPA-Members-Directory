@@ -11,10 +11,22 @@ jQuery(document).ready(function($) {
       this.load_pagination();
       //this.select_multiple_limit();
 
+      console.log(nhpa_plugin_data);
 
     },
 
     load_nhpa_pmpro_members: function(limitF, offsetF, doSearch) {
+
+      var enable_disable_ajax = parseInt(nhpa_plugin_data.enable_disable_ajax);
+
+
+      if ((isNaN(enable_disable_ajax))) {
+
+        nhpa_dir.view_profile();
+
+        return;
+
+      }
 
       if ($(".load_nhpa_pmpro_members").length === 0)
         return;
@@ -225,10 +237,11 @@ jQuery(document).ready(function($) {
 
       $(".single_member_profile").each(function(i, el) {
 
-        var xs_5 = $(this).find(".col-xs-5").height();
+        //var xs_5 = $(this).find(".col-xs-5").height();
+        var xs_5 = $(this).find(".row").height();
         $(this).find(".col-xs-4").css("height", xs_5);
 
-
+        console.log(xs_5);
 
       })
 

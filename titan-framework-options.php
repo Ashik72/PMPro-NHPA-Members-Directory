@@ -112,6 +112,14 @@ function wp_expert_custom_options_pmpro_nhpa_opts() {
             ]);
 
 
+            $tab->createOption([
+              'name' => 'Use AJAX for directory',
+              'id' => 'enable_dir_ajax',
+              'type' => 'enable',
+              'default' => false,
+              'desc' => ''
+              ]);
+
 
 	/*			$tab = $section->createTab( array(
     		'name' => 'Product Field Options'

@@ -48,6 +48,15 @@
   text-align: center;
 }
 
+
+.single_member_profile_load img{
+  text-align: center;
+  width: 50px;
+  height: auto;
+  margin:0 auto;
+  display: block;
+}
+
 .navigate_dir .col-xs-2 {
   text-align: center;
 }
