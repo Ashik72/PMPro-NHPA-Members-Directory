@@ -26,6 +26,13 @@ if(!defined('WPINC')) // MUST have WordPress.
   $html = "";
 
   $html .= "<div class='load_nhpa_pmpro_members' data-wp_page_id='".get_the_ID()."' data-limit='".$atts['limit']."'>";
+
+	$html .= "<div class='container searchParams'>";
+	$html .= "<div class='row'>Total members : ".count(get_users())."</div>";
+	$html .= "<div class='row'>Showing from : ".($offset+1)."</div>";
+	$html .= "</div>";
+
+
   $html .= '<div class="container"><div class="row block_input">';
 
   foreach ($users as $key => $user) {
