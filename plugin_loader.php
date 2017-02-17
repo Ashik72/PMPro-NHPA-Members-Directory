@@ -12,8 +12,8 @@ require_once( plugin_dir_path( __FILE__ ) . '/inc/class.dir_search.php' );
 require_once( plugin_dir_path( __FILE__ ) . '/inc/class.nhpa_profile.php' );
 require_once( plugin_dir_path( __FILE__ ) . '/inc/class.map.php' );
 
-require_once( plugin_dir_path( __FILE__ ) . '/inc/class.nhpa_directory.php' );
 require_once( plugin_dir_path( __FILE__ ) . '/inc/class.nhpa_directory_psychologist.php' );
+require_once( plugin_dir_path( __FILE__ ) . '/inc/class.nhpa_directory.php' );
 
   add_action( 'plugins_loaded', function () {
   	NHPA_Directory::get_instance();

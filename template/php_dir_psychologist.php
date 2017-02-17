@@ -17,18 +17,26 @@ if(!defined('WPINC')) // MUST have WordPress.
   $offset = ( $page - 1 ) * $offset;
 
   //
-  $users = get_users([ 'number' => $number, 'offset' => $offset,'fields' => ['ID'], 'orderby' => 'registered' ]);
-
 
 //
+$users = get_users([ 'number' => $number, 'offset' => $offset,'fields' => ['ID'], 'orderby' => 'registered' ]);
 
-$search_result_array = NHPA_Directory_Search::search_func_general($_POST);
+$exclude_membership_levels = ( empty($titan->getOption( 'exclude_membership_levels' )) ? "" : $titan->getOption( 'exclude_membership_levels' ) );
+$exclude_membership_levels = explode(",", $exclude_membership_levels);
+//if (pmpro_hasMembershipLevel($membership_level , $current_user_id))
+$exclude_membership_levels = ( is_array($exclude_membership_levels) ? $exclude_membership_levels : array() );
+$exclude_membership_levels = array_map('intval', $exclude_membership_levels);
 
-$search_result = $search_result_array['result'];
+////
 
-if (!empty($search_result))
-	$search_result = array_map('intval', $search_result);
+  $search_result_array = NHPA_Directory_Search::search_func_psychology($_POST);
 
+  $search_result = $search_result_array['result'];
+
+  if (!empty($search_result))
+    $search_result = array_map('intval', $search_result);
+
+////
 //
 
   //$users = get_users([ 'fields' => ['ID'], 'orderby' => 'registered' ]);
@@ -40,52 +48,43 @@ if (!empty($search_result))
 
   $html .= "<div class='load_nhpa_pmpro_members' data-wp_page_id='".get_the_ID()."' data-limit='".$atts['limit']."'>";
 
-	// $html .= "<div class='container searchParams'>";
-	// $html .= "<div class='row'>Total members : ".count(get_users())."</div>";
-	// $html .= "<div class='row'>Showing from : ".($offset+1)."</div>";
-	// $html .= "</div>";
+	$html .= "<div class='container searchParams'>";
 
-//
+  if (empty($search_result)) {
+    $html .= "<div class='row'>Total members : ".count(get_users())."</div>";
+  	$html .= "<div class='row'>Showing from : ".($offset+1)."</div>";
 
-$html .= "<div class='container searchParams'>";
+  } else {
 
-if (empty($search_result)) {
-	$html .= "<div class='row'>Total members : ".count(get_users())."</div>";
-	$html .= "<div class='row'>Showing from : ".($offset+1)."</div>";
+    $html .= "<div class='searchParamsInfo row'>Search parameters:</div>";
 
-} else {
+    $search_result_data = $search_result_array['searched_data'];
 
-	$html .= "<div class='searchParamsInfo row'>Search parameters:</div>";
+    foreach ($search_result_data as $single_search_result_data_key => $single_search_result_data) {
 
-	$search_result_data = $search_result_array['searched_data'];
+      if ($single_search_result_data_key == 'search_type')
+        continue;
 
-	foreach ($search_result_data as $single_search_result_data_key => $single_search_result_data) {
+      if ($single_search_result_data_key == 'search_trigger')
+        continue;
 
-		if ($single_search_result_data_key == 'search_type')
-			continue;
+      if ($single_search_result_data_key == 'limit')
+        continue;
 
-		if ($single_search_result_data_key == 'search_trigger')
-			continue;
-
-		if ($single_search_result_data_key == 'limit')
-			continue;
-
-		$html .= "<div class='row'>{$single_search_result_data_key} : {$single_search_result_data}</div>";
+      $html .= "<div class='row'>{$single_search_result_data_key} : {$single_search_result_data}</div>";
 
 
-	}
+    }
 
-	$html .= "<div class='row'>Total members : ".count($search_result)."</div>";
+    $html .= "<div class='row'>Total members : ".count($search_result)."</div>";
 
-}
-$html .= "</div>";
-
-//
+  }
+	$html .= "</div>";
 
 
   $html .= '<div class="container"><div class="row block_input">';
 
-	if (!empty($search_result)) {
+  if (!empty($search_result)) {
 
     foreach ($search_result as $key => $user) {
       $html_single = NHPA_Directory::get_single_profile_basic($user);
@@ -105,6 +104,8 @@ $html .= "</div>";
 
   }
 
+
+
   $html .=  '<div class="col-sm-12"><div class="single_member_profile_load">';
 
 
@@ -113,7 +114,7 @@ $html .= "</div>";
   // $html .=  '<div class="col-sm-12"><div class="single_member_profile">'.$html_single.'</div></div>';
   $current_page_id = (int) ( empty($_GET['nhpa_page']) ? 1 : $_GET['nhpa_page'] );
   $html .= '</div></div>';
-	$html .= '<div class="container"><div style="display: '.( empty($search_result) ? "block" : "none" ).'" class="row navigate_dir" >';
+  $html .= '<div class="container"><div style="display: '.( empty($search_result) ? "block" : "none" ).'" class="row navigate_dir" >';
 
   //$html .= '       <div class="col-xs-2 preList"><a href="#">Previous</a></div>    <div class="col-xs-2 nextList"><a href="?get_next=">Next</a></div></div></div>';
   $html .= '    <div class="col-xs-12">';
@@ -142,4 +143,5 @@ $html .= "</div>";
   $html .= "</div>";
 
   echo $html;
+
  ?>

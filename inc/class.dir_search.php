@@ -358,7 +358,7 @@ class NHPA_Directory_Search
 					<div class="col-sm-10">';
 
 					//$html .= '<select data-test="e" multiple="multiple" data-select_array="1" data-meta_field="'.$search_field[2].'" multiple class="form-control" id="select-input-'.$key_count.'">';
-					$html .= '<select data-test="e" data-select_array="1" data-meta_field="'.$search_field[2].'" class="form-control" id="select-input-'.$key_count.'">';
+					$html .= '<select data-test="e" data-select_array="1" name="'.$search_field[2].'" data-meta_field="'.$search_field[2].'" class="form-control" id="select-input-'.$key_count.'">';
 
 					$html .= $html_opts;
 
@@ -433,7 +433,7 @@ class NHPA_Directory_Search
 			$html = '  <div class="form-group row">
 			<label for="text-input-'.$key_count.'" class="col-sm-2 col-form-label">'.$search_field[1].'</label>
 			<div class="col-sm-10">
-		    <input data-meta_field="'.$search_field[2].'" class="form-control" type="text" value="" id="text-input-'.$key_count.'">
+		    <input data-meta_field="'.$search_field[2].'" name="'.$search_field[2].'" class="form-control" type="text" value="" id="text-input-'.$key_count.'">
 		  </div>
   </div>';
 
@@ -476,7 +476,7 @@ class NHPA_Directory_Search
 					<label for="select-input-'.$key_count.'" class="col-sm-2 col-form-label">'.$search_field[1].'</label>
 					<div class="col-sm-10">
 
-					<select data-meta_field="'.$search_field[2].'" class="form-control" id="select-input-'.$key_count.'">';
+					<select name="'.$search_field[2].'" data-meta_field="'.$search_field[2].'" class="form-control" id="select-input-'.$key_count.'">';
 
 					$html .= $html_opts;
 
@@ -527,6 +527,122 @@ class NHPA_Directory_Search
 
 			return $html_val;
 
+
+	}
+
+	public static function search_func_psychology($post = null) {
+
+		if (empty($post))
+			return;
+
+		if (empty($post['search_trigger']))
+			return;
+
+			$search_params = $post;
+			$search_results = array();
+			$search_type = "";
+
+			global $wpdb;
+			$prefix = $wpdb->get_blog_prefix();
+
+			$search_type = $search_params['search_type'];
+			$searched_data = [];
+
+			foreach ($search_params as $key => $search_param) {
+
+
+			/*  if (empty($search_param['value'])) {
+					unset($search_params[$key]);
+					continue;
+				}
+
+				if ( strcmp($search_param['meta'], "search_type") === 0)
+					$search_type = $search_param['value'];
+			*/
+				$meta_key = trim($key);
+				$meta_value = $search_param;
+
+				if (empty($meta_value))
+					continue;
+
+					$searched_data[$meta_key] = $meta_value;
+
+					$search_results[] = $wpdb->get_results( "SELECT * FROM `{$prefix}usermeta` WHERE meta_key = '{$meta_key}' AND `meta_value` LIKE '%{$meta_value}%'", OBJECT );
+
+			//SELECT * FROM `wpgq_usermeta` WHERE `meta_key` = 'institution' AND `meta_value` = 'brac'
+
+			}
+
+				$search_results = array_filter($search_results);
+
+				if (empty($search_results))
+					return;
+
+					if (strcmp($search_type, "intersect") === 0)
+						$final_result = self::intersectSearchResult($search_results);
+					else
+						$final_result = self::unionSearchResult($search_results);
+
+
+				return [ 'result' => $final_result, 'searched_data' => $searched_data ];
+
+	}
+
+	public static function search_func_general($post = null) {
+
+		if (empty($post))
+			return;
+
+		if (empty($post['search_trigger']))
+			return;
+
+			$search_params = $post;
+			$search_results = array();
+			$search_type = "";
+
+			global $wpdb;
+			$prefix = $wpdb->get_blog_prefix();
+
+			$search_type = $search_params['search_type'];
+			$searched_data = [];
+
+			foreach ($search_params as $key => $search_param) {
+
+
+			/*  if (empty($search_param['value'])) {
+					unset($search_params[$key]);
+					continue;
+				}
+
+				if ( strcmp($search_param['meta'], "search_type") === 0)
+					$search_type = $search_param['value'];
+			*/
+				$meta_key = trim($key);
+				$meta_value = $search_param;
+
+				if (empty($meta_value))
+					continue;
+
+					$searched_data[$meta_key] = $meta_value;
+
+					$search_results[] = $wpdb->get_results( "SELECT * FROM `{$prefix}usermeta` WHERE meta_key = '{$meta_key}' AND `meta_value` LIKE '%{$meta_value}%'", OBJECT );
+
+			//SELECT * FROM `wpgq_usermeta` WHERE `meta_key` = 'institution' AND `meta_value` = 'brac'
+
+			}
+
+				$search_results = array_filter($search_results);
+
+				if (empty($search_results))
+					return;
+
+					if (strcmp($search_type, "intersect") === 0)
+						$final_result = self::intersectSearchResult($search_results);
+					else
+						$final_result = self::unionSearchResult($search_results);
+
+
+				return [ 'result' => $final_result, 'searched_data' => $searched_data ];
 
 	}
 

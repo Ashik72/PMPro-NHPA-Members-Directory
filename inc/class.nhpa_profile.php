@@ -237,25 +237,39 @@ if($pageis == 'find'){   // Find A Psycho
         </div>';*/
 
 
-        $html_pic .= '
-        <div class="col-sm-9 col-sm-offset-3 regiondiv">
-         <p><strong>NH Region:</strong> '. $nhregion = implode(', ', $nhregion). ' </p>
-        </div>';
+        if (is_array($nhregion)) {
 
-        $html_pic .= '
-        <div class="col-sm-9 col-sm-offset-3 populationserveddiv">
-         <p><strong>Population Served:</strong> '. $populationserved = implode(', ', $populationserved). ' </p>
-        </div>';
+          $html_pic .= '
+          <div class="col-sm-9 col-sm-offset-3 regiondiv">
+           <p><strong>NH Region:</strong> '. $nhregion = implode(', ', $nhregion). ' </p>
+          </div>';
+        }
 
-        $html_pic .= '
-        <div class="col-sm-9 col-sm-offset-3 areasofpracticediv">
-         <p><strong>Treatment & Practice Areas:</strong> '. $areasofpractice = implode(', ', $areasofpractice). ' </p>
-        </div>';
+        if (is_array($populationserved)) {
 
-        $html_pic .= '
-        <div class="col-sm-9 col-sm-offset-3 accepted_fee_arrangementsdiv">
-         <p><strong>Accepted Fee arrangements:</strong> '. $accepted_fee_arrangements  = implode(', ', $$accepted_fee_arrangements). ' </p>
-        </div>';
+          $html_pic .= '
+          <div class="col-sm-9 col-sm-offset-3 populationserveddiv">
+           <p><strong>Population Served:</strong> '. $populationserved = implode(', ', $populationserved). ' </p>
+          </div>';
+        }
+
+        if (is_array($areasofpractice)) {
+
+          $html_pic .= '
+          <div class="col-sm-9 col-sm-offset-3 areasofpracticediv">
+           <p><strong>Treatment & Practice Areas:</strong> '. $areasofpractice = implode(', ', $areasofpractice). ' </p>
+          </div>';
+        }
+
+
+        if (is_array($accepted_fee_arrangements)) {
+
+          $html_pic .= '
+          <div class="col-sm-9 col-sm-offset-3 accepted_fee_arrangementsdiv">
+           <p><strong>Accepted Fee arrangements:</strong> '. $accepted_fee_arrangements  = implode(', ', $$accepted_fee_arrangements). ' </p>
+          </div>';
+        }
+
 
           $html_pic .= '
         <div class="col-sm-9 col-sm-offset-3 languagesspokendiv">
@@ -308,14 +322,21 @@ if($pageis == 'find'){   // Find A Psycho
           <p><strong>Work County:</strong>  ' . $county . '</p>
         </div>';
 
-        $html_pic .= '
-        <div class="col-sm-9 col-sm-offset-3 regiondiv">
-         <p><strong>NH Region:</strong> '. $nhregion = implode(', ', $nhregion). ' </p>
-        </div>
+        if (is_array($nhregion)) {
 
-        <div class="gap"></div>
+          $html_pic .= '
+          <div class="col-sm-9 col-sm-offset-3 regiondiv">
+           <p><strong>NH Region:</strong> '. $nhregion = implode(', ', $nhregion). ' </p>
+          </div>
 
-        ';
+          <div class="gap"></div>
+
+          ';
+
+
+        }
+
+
 
 
           $html_pic .= '
@@ -353,20 +374,34 @@ if($pageis == 'find'){   // Find A Psycho
           <p><strong>Preferred Mailing Address:</strong>  ' . $preferredmailingaddress . '</p>
         </div>';
 
-        $html_pic .= '
-        <div class="col-sm-9 col-sm-offset-3 populationserveddiv">
-         <p><strong>Population Served:</strong> '. $populationserved = implode(', ', $populationserved). ' </p>
-        </div>';
+        if (is_array($populationserved)) {
 
-        $html_pic .= '
-        <div class="col-sm-9 col-sm-offset-3 areasofpracticediv">
-         <p><strong>Treatment & Practice Areas:</strong> '. $areasofpractice = implode(', ', $areasofpractice). ' </p>
-        </div>';
+          $html_pic .= '
+          <div class="col-sm-9 col-sm-offset-3 populationserveddiv">
+           <p><strong>Population Served:</strong> '. $populationserved = implode(', ', $populationserved). ' </p>
+          </div>';
 
-        $html_pic .= '
-        <div class="col-sm-9 col-sm-offset-3 accepted_fee_arrangementsdiv">
-         <p><strong>Accepted Fee Arrangements:</strong> '. $accepted_fee_arrangements = implode(', ', $accepted_fee_arrangements). ' </p>
-        </div>';
+        }
+
+        if (is_array($areasofpractice)) {
+
+          $html_pic .= '
+          <div class="col-sm-9 col-sm-offset-3 areasofpracticediv">
+           <p><strong>Treatment & Practice Areas:</strong> '. $areasofpractice = implode(', ', $areasofpractice). ' </p>
+          </div>';
+
+
+        }
+
+
+        if (is_array($accepted_fee_arrangements)) {
+
+          $html_pic .= '
+          <div class="col-sm-9 col-sm-offset-3 accepted_fee_arrangementsdiv">
+           <p><strong>Accepted Fee Arrangements:</strong> '. $accepted_fee_arrangements = implode(', ', $accepted_fee_arrangements). ' </p>
+          </div>';
+
+        }
 
          $html_pic .= '
 

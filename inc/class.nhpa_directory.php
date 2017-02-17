@@ -59,6 +59,8 @@ public static function get_instance() {
     add_action( 'wp_ajax_nopriv_geocode_location', array('NHPA_Map', 'geoCoderJSON') );
 
 
+		add_shortcode( 'nhpa_members_dir_psychologist', ['NHPA_Directory_Search_psychologist', 'nhpa_members_dir_func'] );
+
   }
 
 	public function map_script() {
@@ -473,6 +475,8 @@ public static function get_instance() {
     global $wpdb;
     $titan = TitanFramework::getInstance( 'pmpro_nhpa_opts' );
 
+		$titan_ajax = $titan->getOption( 'enable_dir_ajax' );
+
     $uid = $user_id;
     $user_data = self::get_filtered_user_meta($uid);
 
@@ -522,7 +526,14 @@ public static function get_instance() {
 				<div class="user_address">'.$user_data['_state'][0].'</div>
 				<div class="user_address">'.$user_homeaddress. ( empty($user_homecityaddress) ? "" : ", " ) .$user_homecityaddress.'</div>
 
-        <div class="view_profile"><button data-user="'.$uid.'" type="button" class="btn btn-primary btn-sm">'.__("View Profile", "pmpro_nhpa").'</button></div>
+';
+
+if (!empty($titan_ajax))
+	$html_single .= '<div class="view_profile"><button data-user="'.$uid.'" type="button" class="btn btn-primary btn-sm">'.__("View Profile", "pmpro_nhpa").'</button></div>';
+else
+	$html_single .= '<a href="'.'?user_id='.$uid.'"><div class="view_profile_link"><button data-user="'.$uid.'" type="button" class="btn btn-primary btn-sm">'.__("View Profile", "pmpro_nhpa").'</button></div></a>';
+
+$html_single .= '
 
 
         </div>

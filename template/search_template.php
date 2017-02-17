@@ -5,7 +5,19 @@
       <div class="row">
           <div class="col-sm-12">
 
-            <form id="searchDirForm">
+<?php
+
+$titan = TitanFramework::getInstance( 'pmpro_nhpa_opts' );
+$titan_ajax = $titan->getOption( 'enable_dir_ajax' );
+
+if ($titan_ajax)
+  _e('<form id="searchDirForm">');
+else
+  _e('<form id="searchDirForm" action="." method="get">');
+
+ ?>
+
+
 
               <?php
 
@@ -26,7 +38,16 @@
                </div>
                </div>
 
-              <button type="submit" class="btn btn-primary">Submit</button>
+<?php
+
+if ($titan_ajax)
+  _e('<button type="submit" class="btn btn-primary">Submit</button>');
+else
+  _e('<button name="search_trigger" value="do_search" type="submit" class="btn btn-primary">Submit</button>');
+
+
+ ?>
+
               <button type="reset" class="btn btn-primary">Reset</button>
 
             </form>

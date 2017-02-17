@@ -362,6 +362,8 @@ jQuery(document).ready(function($) {
 
     $("#searchDirForm").submit(function(evt) {
 
+
+      return;
       evt.preventDefault();
 
       $("#searchDirForm button[type='submit']").html("<img src='"+nhpa_plugin_data.pmpro_nhpa_PLUGIN_URL+"img/ajax-loader.gif'>")
