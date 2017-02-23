@@ -52,3 +52,21 @@ class NHPA_Directory_Search_psychologist {
 
 
 }
+
+
+
+/**
+ * Dir Psy Struct
+ */
+class psy_dir_struct
+{
+	public $ID;
+	function __construct($user_id = null)
+	{
+		if (empty($user_id))
+			return;
+
+		$this->ID = $user_id;
+
+	}
+}

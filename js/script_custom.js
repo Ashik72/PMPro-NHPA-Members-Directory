@@ -500,24 +500,26 @@ jQuery(document).ready(function($) {
 
     var count = parseInt($(".load_nhpa_pmpro_members").data("limit"));
     var wp_page_id = parseInt($(".load_nhpa_pmpro_members").data("wp_page_id"));
+    var psychologist_dir = parseInt($(".load_nhpa_pmpro_members").data("psychologist_dir"));
 
+    console.log(  );
 
     var data_1 = {
-      'action' : 'do_pagination_check',
+      'action' : ((psychologist_dir == 1) ? "do_pagination_check_psy" : "do_pagination_check"),
       'page_id' : id_next_1,
       'count' : count,
       'wp_page_id' : wp_page_id
     };
 
     var data_2 = {
-      'action' : 'do_pagination_check',
+      'action' : ((psychologist_dir == 1) ? "do_pagination_check_psy" : "do_pagination_check"),
       'page_id' : id_next_2,
       'count' : count,
       'wp_page_id' : wp_page_id
     };
 
     var data_3 = {
-      'action' : 'do_pagination_check',
+      'action' : ((psychologist_dir == 1) ? "do_pagination_check_psy" : "do_pagination_check"),
       'page_id' : id_next_3,
       'count' : count,
       'wp_page_id' : wp_page_id

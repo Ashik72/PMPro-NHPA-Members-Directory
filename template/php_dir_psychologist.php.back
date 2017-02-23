@@ -19,20 +19,30 @@ if(!defined('WPINC')) // MUST have WordPress.
   //
 
 //
+$users = get_users([ 'number' => $number, 'offset' => $offset,'fields' => ['ID'], 'orderby' => 'registered' ]);
 //d($users);
 $exclude_membership_levels = ( empty($titan->getOption( 'exclude_membership_levels' )) ? "" : $titan->getOption( 'exclude_membership_levels' ) );
 $exclude_membership_levels = explode(",", $exclude_membership_levels);
 //if (pmpro_hasMembershipLevel($membership_level , $current_user_id))
 $exclude_membership_levels = ( is_array($exclude_membership_levels) ? $exclude_membership_levels : array() );
 $exclude_membership_levels = array_map('intval', $exclude_membership_levels);
-array_walk($exclude_membership_levels, function(&$item) {
 
-	$item = "pmpro_role_".$item;
+$filtered_user_id = [];
+$user_id_not_exists = 0;
 
-});
+d($offset);
 
-$users = get_users([ 'number' => $number, 'role__not_in' => $exclude_membership_levels, 'offset' => $offset,'fields' => ['ID'], 'orderby' => 'registered' ]);
 
+foreach ($users as $key => $user) {
+	$user_id_not_exists = NHPA_Directory::user_is_not_specified_member($exclude_membership_levels, $user->ID);
+	if ($user_id_not_exists)
+		$filtered_user_id[] = new psy_dir_struct($user->ID);
+}
+
+d($filtered_user_id);
+d($users);
+
+$users = $filtered_user_id;
 ////
 
   $search_result_array = NHPA_Directory_Search::search_func_psychology($_POST);
@@ -52,7 +62,7 @@ $users = get_users([ 'number' => $number, 'role__not_in' => $exclude_membership_
 
   $html = "";
 
-  $html .= "<div class='load_nhpa_pmpro_members' data-psychologist_dir=1 data-wp_page_id='".get_the_ID()."' data-limit='".$atts['limit']."'>";
+  $html .= "<div class='load_nhpa_pmpro_members' data-wp_page_id='".get_the_ID()."' data-limit='".$atts['limit']."'>";
 
 	$html .= "<div class='container searchParams'>";
 

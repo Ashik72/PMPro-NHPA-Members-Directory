@@ -58,6 +58,8 @@ public static function get_instance() {
 		add_action( 'wp_ajax_geocode_location', array('NHPA_Map', 'geoCoderJSON') );
     add_action( 'wp_ajax_nopriv_geocode_location', array('NHPA_Map', 'geoCoderJSON') );
 
+		add_action( 'wp_ajax_do_pagination_check_psy', array($this, 'do_pagination_check_psy_callback') );
+    add_action( 'wp_ajax_nopriv_do_pagination_check_psy', array($this, 'do_pagination_check_psy_callback') );
 
 		add_shortcode( 'nhpa_members_dir_psychologist', ['NHPA_Directory_Search_psychologist', 'nhpa_members_dir_func'] );
 
@@ -348,6 +350,48 @@ public static function get_instance() {
 			$filtered_user_id = get_users([ 'number' => $number, 'exclude' => $filtered_user_id, 'offset' => $offset,'fields' => ['ID'], 'orderby' => 'registered' ]);
 
 			echo json_encode(count($filtered_user_id));
+
+
+
+			wp_die();
+
+	}
+
+
+	public function do_pagination_check_psy_callback() {
+
+		if (empty($_POST['page_id']) || empty($_POST['count']))
+			return;
+
+			$titan = TitanFramework::getInstance( 'pmpro_nhpa_opts' );
+			$directory_page_id = ( empty($titan->getOption( 'page_id_for_filter' )) ? "" : $titan->getOption( 'page_id_for_filter' ) );
+
+			$wp_page_id = ( empty($_POST['wp_page_id']) ? "" : $_POST['wp_page_id'] );
+
+			$wp_page_id = (int) $wp_page_id;
+			$directory_page_id = (int) $directory_page_id;
+
+
+			$number = ( empty($_POST['count']) ? "" : $_POST['count'] );
+
+			$offset = ( empty($_POST['count']) ? "" : $_POST['count'] );
+			$page = ( empty($_POST['page_id']) ? "" : $_POST['page_id'] );
+
+			$offset = ( $page - 1 ) * $offset;
+
+			$exclude_membership_levels = ( empty($titan->getOption( 'exclude_membership_levels' )) ? "" : $titan->getOption( 'exclude_membership_levels' ) );
+			$exclude_membership_levels = explode(",", $exclude_membership_levels);
+			//if (pmpro_hasMembershipLevel($membership_level , $current_user_id))
+			$exclude_membership_levels = ( is_array($exclude_membership_levels) ? $exclude_membership_levels : array() );
+			$exclude_membership_levels = array_map('intval', $exclude_membership_levels);
+			array_walk($exclude_membership_levels, function(&$item) {
+
+				$item = "pmpro_role_".$item;
+
+			});
+
+
+		echo json_encode(count(get_users([ 'number' => $number, 'role__not_in' => $exclude_membership_levels, 'offset' => $offset,'fields' => ['ID'], 'orderby' => 'registered' ])));
 
 
 
